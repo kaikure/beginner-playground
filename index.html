@@ -88,6 +88,31 @@ body {
   font-weight: bold;
 }
 
+.header-link {
+  position: absolute;
+  right: 110px;
+  top: 8px;
+
+  height: 32px;
+  display: flex;
+  align-items: center;
+
+  padding: 0 12px;
+
+  border-radius: 6px;
+
+  background: #3b82f6;
+  color: white;
+
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.header-link:hover {
+  background: #2563eb;
+}
+
 #toggleSidebarBtn {
   left: 10px;
 }
@@ -582,14 +607,22 @@ textarea {
 </head>
 <body>
 <div class="app">
-  <header class="header">
-    <button class="header-btn" id="toggleSidebarBtn">📦 パーツ</button>
-    <div>
-      <span class="header-title">初心者向けプレイグラウンド 完全版</span>
-      <span class="header-sub">PCは3分割 / スマホはタブ切替 / 下にリアルタイム出力</span>
-    </div>
-    <button class="header-btn" id="resetAllBtn">初期化</button>
-  </header>
+ <header class="header">
+  <button class="header-btn" id="toggleSidebarBtn">📦 パーツ</button>
+
+  <div>
+    <span class="header-title">初心者向けプレイグラウンド 完全版</span>
+    <span class="header-sub">
+      PCは3分割 / スマホはタブ切替 / 下にリアルタイム出力
+    </span>
+  </div>
+
+  <a href="code-cheatsheet.html" class="header-link">
+    📚 コードカンペ
+  </a>
+
+  <button class="header-btn" id="resetAllBtn">初期化</button>
+</header>
 
   <div class="mobile-tabs">
     <button class="mobile-tab active" data-mobile="html">HTML</button>
