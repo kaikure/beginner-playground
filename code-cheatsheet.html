@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プログラミングコードカンペ（開発特化・一括コピー版）</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  background: #f4f5f7;
+  color: #333;
+  line-height: 1.5;
+}
+
+header {
+  background: #1e1e24;
+  color: white;
+  text-align: center;
+  padding: 24px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.tabs {
+  display: flex;
+  background: #2f3138;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 14px;
+  color: #b0b3b8;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab:hover {
+  color: white;
+  background: #3a3d45;
+}
+
+.tab.active {
+  color: white;
+  background: #3a3d45;
+  border-bottom: 3px solid #00adb5;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.search-container {
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+input:focus {
+  border-color: #00adb5;
+  box-shadow: 0 0 8px rgba(0, 173, 181, 0.4);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 40px;
+}
+
+th, td {
+  border: 1px solid #eef0f2;
+  padding: 14px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background: #f8f9fa;
+  font-weight: bold;
+  color: #495057;
+  white-space: nowrap;
+}
+
+th.col-tag { width: 15%; }
+th.col-role { width: 22%; }
+th.col-example { width: 40%; }
+th.col-site { width: 23%; }
+
+.code {
+  background: #1e1e1e;
+  color: #9cdcfe;
+  font-family: "Consolas", "Courier New", Courier, monospace;
+  padding: 10px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: pre-wrap;
+  word-break: break-all;
+  position: relative;
+  font-size: 0.88rem;
+  transition: background 0.2s;
+}
+
+.code:hover {
+  background: #2d2d2d;
+}
+
+.code::after {
+  content: "クリックで一括コピー 📋";
+  position: absolute;
+  right: 10px;
+  top: 6px;
+  font-size: 0.7rem;
+  color: #6a9955;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.code:hover::after {
+  opacity: 1;
+}
+
+.section-tr {
+  background: #e2e8f0;
+}
+
+.section-td {
+  font-weight: bold;
+  color: #1e293b;
+  padding: 12px 16px;
+  font-size: 1rem;
+}
+
+.maniac-badge {
+  background: #ff4757;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-left: 6px;
+  display: inline-block;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.no-result {
+  text-align: center;
+  padding: 40px;
+  color: #718096;
+  background: white;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* =========================================================
+   📱 スマホ対応追加
+   大枠の「HTML / CSS / JS タブ + 検索 + 表」はそのまま。
+   画面幅が狭い時だけ、表を1行ずつカードのように読む形へ変更。
+   ========================================================= */
+.copy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  background: #1e1e24;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  font-weight: bold;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+  z-index: 9999;
+}
+.copy-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.code {
+  padding-right: 120px;
+}
+
+@media (max-width: 768px) {
+  body {
+    background: #eef1f5;
+  }
+
+  header {
+    padding: 16px 12px;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    min-width: 170px;
+    padding: 12px 10px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .search-container {
+    position: sticky;
+    top: 47px;
+    z-index: 90;
+    margin: 0 -12px 12px;
+    padding: 10px 12px;
+    background: #eef1f5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  input {
+    font-size: 0.95rem;
+    padding: 12px 14px;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  table {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    margin-bottom: 24px;
+  }
+
+  tbody {
+    display: block;
+  }
+
+  tr {
+    background: white;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e8edf3;
+  }
+
+  tr.section-tr {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    margin: 18px 0 8px;
+    border-radius: 0;
+  }
+
+  .section-td {
+    background: #dfe8f3;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+  }
+
+  td {
+    border: none;
+    border-bottom: 1px solid #edf1f5;
+    padding: 11px 13px;
+    font-size: 0.9rem;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  td::before {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+    color: #00adb5;
+    font-weight: bold;
+    letter-spacing: 0.03em;
+  }
+
+  /* HTMLタブ用ラベル */
+  #html tbody tr[data-key] td:nth-child(1)::before { content: "タグ / 属性"; }
+  #html tbody tr[data-key] td:nth-child(2)::before { content: "意味・役割"; }
+  #html tbody tr[data-key] td:nth-child(3)::before { content: "構文 / コピー用コード"; }
+  #html tbody tr[data-key] td:nth-child(4)::before { content: "実戦での使われ方"; }
+
+  /* CSSタブ用ラベル */
+  #css tbody tr[data-key] td:nth-child(1)::before { content: "プロパティ"; }
+  #css tbody tr[data-key] td:nth-child(2)::before { content: "やりたいこと"; }
+  #css tbody tr[data-key] td:nth-child(3)::before { content: "コピー用コード"; }
+  #css tbody tr[data-key] td:nth-child(4)::before { content: "実戦での使われ方"; }
+
+  /* JSタブ用ラベル */
+  #js tbody tr[data-key] td:nth-child(1)::before { content: "JSの命令"; }
+  #js tbody tr[data-key] td:nth-child(2)::before { content: "意味・役割"; }
+  #js tbody tr[data-key] td:nth-child(3)::before { content: "コピー用コード"; }
+  #js tbody tr[data-key] td:nth-child(4)::before { content: "実戦での使われ方"; }
+
+  .section-td::before,
+  .code::before {
+    display: none !important;
+  }
+
+  .code {
+    padding: 12px;
+    margin-top: 4px;
+    overflow-x: auto;
+    white-space: pre;
+    word-break: normal;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .code::after {
+    content: "タップでコピー 📋";
+    opacity: 1;
+    position: static;
+    display: block;
+    margin-top: 8px;
+    color: #6a9955;
+    font-size: 0.72rem;
+  }
+
+  .maniac-badge {
+    font-size: 0.65rem;
+  }
+
+  .no-result {
+    padding: 24px 12px;
+    font-size: 0.9rem;
+  }
+
+  .copy-toast {
+    width: calc(100% - 32px);
+    text-align: center;
+    bottom: 16px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .tab {
+    min-width: 150px;
+    font-size: 0.78rem;
+  }
+
+  td {
+    font-size: 0.86rem;
+  }
+
+  .code {
+    font-size: 0.78rem;
+  }
+}
+
+
+/* =========================
+   📱 横にはみ出す問題 修正
+   ========================= */
+html, body {
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+table,
+tr,
+td,
+th {
+  max-width: 100%;
+}
+
+.code {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  tr {
+    width: 100%;
+  }
+
+  td {
+    width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .code {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding-right: 12px;
+  }
+
+  .code::after {
+    right: auto;
+  }
+
+  input {
+    min-width: 0;
+  }
+}
+
+</style>
+
+</head>
+<body>
+
+<header>コードカンペ（一括コピー＆超強力検索 特化版）</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('html', event)">HTML（骨組み・パーツ）</div>
+  <div class="tab" onclick="switchTab('css', event)">CSS（デザイン・レイアウト・プロ技）</div>
+  <div class="tab" onclick="switchTab('js', event)">JavaScript（動的イベント・全処理）</div>
+</div>
+
+<div class="container">
+
+  <div class="search-container">
+    <input type="text" id="search" placeholder="言葉や目的で爆速検索（例：中央寄せ、等間隔、すり抜け、電話、リロード、非表示、削除）">
+  </div>
+
+  <div id="html" class="content">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-tag">タグ / 属性</th>
+          <th class="col-role">意味・役割</th>
+          <th class="col-example">構文 / ボイラープレート（クリックで一括コピー）</th>
+          <th class="col-site">実戦での具体的な使われ方</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-tr"><td colspan="4" class="section-td">【1. ドキュメント基本構造】</td></tr>
+        <tr data-key="!doctype html html head body 宣言 仕様 バージョン スケルトン 雛形 テンプレート 初期化">
+          <td>HTML5 雛形セット</td>
+          <td>HTML5の基本構造一式</td>
+          <td class="code">&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;Document&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  
+&lt;/body&gt;
+&lt;/html&gt;</td>
+          <td>新規HTMLファイル作成時に最初に展開する、必須の全体ボイラープレート。</td>
+        </tr>
+        <tr data-key="meta 属性 ビューポート 文字コード charset viewport レスポンシブ スマホ">
+          <td>&lt;meta&gt; セット</td>
+          <td>文字コードとレスポンシブ設定</td>
+          <td class="code">&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</td>
+          <td>`head`内に記述。文字化け防止と、スマホ・タブレットの画面幅最適化に必須。</td>
+        </tr>
+        <tr data-key="title タイトル 識別 ページ名 タブ名">
+          <td>&lt;title&gt;</td>
+          <td>ウェブページのタイトル定義</td>
+          <td class="code">&lt;title&gt;ページタイトル&lt;/title&gt;</td>
+          <td>ブラウザのタブ名、ブックマーク名、および検索結果のメインリンクとして表示。</td>
+        </tr>
+        <tr data-key="css 読み込み リンク 外部ファイル link スタイルシート 接続">
+          <td>&lt;link href="..."&gt;</td>
+          <td>外部CSSファイルの読み込み</td>
+          <td class="code">&lt;link rel="stylesheet" href="style.css"&gt;</td>
+          <td>`head`タグの中に記述して、作成した外部のCSSデザイン指示書をHTMLと合体させる。</td>
+        </tr>
+        <tr data-key="js 読み込み スクリプト 外部ファイル script プログラム 接続 defer">
+          <td>&lt;script src="..."&gt;</td>
+          <td>外部JavaScriptファイルの読み込み</td>
+          <td class="code">&lt;script src="script.js" defer&gt;&lt;/script&gt;</td>
+          <td>`head`タグの中に記述。`defer`属性を付与することで、HTMLの読み込みを邪魔せず安全にJSを実行可能。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【2. レイアウト・セマンティクス（意味構造）】</td></tr>
+        <tr data-key="div 汎用コンテナ ラッパー 枠組み グループ class ボックス 箱">
+          <td>&lt;div&gt;</td>
+          <td>汎用ブロックコンテナ</td>
+          <td class="code">&lt;div class="container"&gt;
+  
+&lt;/div&gt;</td>
+          <td>特定の意味を持たせない配置用。CSSレイアウト（Flexbox/Grid）の適用や、JSの操作単位。</td>
+        </tr>
+        <tr data-key="header ヘッダー 上部 コンポーネント 共通パーツ メニューバー">
+          <td>&lt;header&gt;</td>
+          <td>セクションまたはページの導入部</td>
+          <td class="code">&lt;header class="global-header"&gt;
+  
+&lt;/header&gt;</td>
+          <td>サイト最上部の共通ナビゲーションや、記事コンポーネント内のタイトルエリアを構築。</td>
+        </tr>
+        <tr data-key="nav ナビゲーション リンク集 メニュー 導線 グローバルメニュー">
+          <td>&lt;nav&gt;</td>
+          <td>主要なナビゲーションリンクの集合</td>
+          <td class="code">&lt;nav class="navigation"&gt;
+  
+&lt;/nav&gt;</td>
+          <td>グローバルメニュー、パンくずリスト、ページネーションなど「サイト内の移動導線」を囲む。</td>
+        </tr>
+        <tr data-key="main メイン 本文 固有要素 1回のみ 主役">
+          <td>&lt;main&gt;</td>
+          <td>ドキュメントの主要コンテンツ領域</td>
+          <td class="code">&lt;main&gt;
+  
+&lt;/main&gt;</td>
+          <td>各ページ固有の主役となる情報空間。1ページ内に一意（1つだけ）であることが原則。</td>
+        </tr>
+        <tr data-key="section セクション 独立 塊 テーマ 章">
+          <td>&lt;section&gt;</td>
+          <td>テーマ性を持った汎用セクション</td>
+          <td class="code">&lt;section class="content-block"&gt;
+  &lt;h2&gt;セクションタイトル&lt;/h2&gt;
+&lt;/section&gt;</td>
+          <td>見出し（h2等）を伴う「論理的な一塊の章」を形成する。単なるデザイン目的の囲みにはdivを使う。</td>
+        </tr>
+        <tr data-key="article アーティクル 独立 完結 配信パーツ ブログ 記事 カード">
+          <td>&lt;article&gt;</td>
+          <td>独立して完結したコンテンツ構造</td>
+          <td class="code">&lt;article class="post-card"&gt;
+  
+&lt;/article&gt;</td>
+          <td>ブログ、ニュース記事、タイムラインの投稿など「それ単体で他所に移植・配信できる」単位。</td>
+        </tr>
+        <tr data-key="aside アサイド 補足 サイドバー 広告リンク 補足情報">
+          <td>&lt;aside&gt;</td>
+          <td>メインから外れた補足・周辺情報</td>
+          <td class="code">&lt;aside class="sidebar"&gt;
+  
+&lt;/aside&gt;</td>
+          <td>サイドバー、広告枠、メインコンテンツに関連する用語解説やSNSシェアボタンエリア。</td>
+        </tr>
+        <tr data-key="footer フッター 最下部 コピーライト サイトマップ 著作権">
+          <td>&lt;footer&gt;</td>
+          <td>セクションまたはページの最下部</td>
+          <td class="code">&lt;footer class="global-footer"&gt;
+  &lt;small&gt;&amp;copy; 2026 クリエイター名&lt;/small&gt;
+&lt;/footer&gt;</td>
+          <td>最下部の著作権表記（Copyright）、サイトマップリンク、関連ドキュメントへのリンクを配置。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【3. テキスト・アウトライン】</td></tr>
+        <tr data-key="h1 h2 h3 見出し 階層構造 アウトライン タイトル 中見出し 小見出し">
+          <td>見出しタグ（h1〜h3）</td>
+          <td>セクションの階層的な見出し</td>
+          <td class="code">&lt;h1&gt;主要タイトル&lt;/h1&gt;
+&lt;h2&gt;中見出し&lt;/h2&gt;
+&lt;h3&gt;小見出し&lt;/h3&gt;</td>
+          <td>ドキュメントのアウトライン構造を決定。SEOやスクリーンリーダーがコンテンツを理解する指標。</td>
+        </tr>
+        <tr data-key="p 段落 パラグラフ テキスト 文章 本文">
+          <td>&lt;p&gt;</td>
+          <td>ひとつのまとまった段落（テキスト）</td>
+          <td class="code">&lt;p&gt;テキストが入ります。&lt;/p&gt;</td>
+          <td>解説文、詳細情報、紹介テキストなど、通常の文章ブロックを展開する。</td>
+        </tr>
+        <tr data-key="br 改行 強制ラインブレイク 閉じタグなし">
+          <td>&lt;br&gt;</td>
+          <td>強制的な改行（ラインブレイク）</td>
+          <td class="code">文末です。&lt;br&gt;次行から開始。</td>
+          <td>デザインや可読性の調整用。段落の間隔を空ける目的の多用は避け、CSSのmarginを使う。</td>
+        </tr>
+        <tr data-key="span スパン インライン パーツ 部分スタイル インラインコンテナ 文字色ハイライト">
+          <td>&lt;span&gt;</td>
+          <td>意味を持たないインラインコンテナ</td>
+          <td class="code">&lt;span class="text-highlight"&gt;特定文字&lt;/span&gt;</td>
+          <td>文中の「一部分だけ」の色やフォントをCSSで制御したいときや、JSで文字を動的追記する標的。</td>
+        </tr>
+        <tr data-key="strong ストロング 重要 太字 セマンティック 強調">
+          <td>&lt;strong&gt;</td>
+          <td>内容の強い重要性・深刻性の明示</td>
+          <td class="code">&lt;strong&gt;重要箇所&lt;/strong&gt;</td>
+          <td>ブラウザでは原則太字で描画。視覚的強調だけでなく、検索エンジンに重要箇所を伝える。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【4. メディア・実戦リンクの裏技】</td></tr>
+        <tr data-key="img イメージ 画像 表示 リソース src alt 遅延読み込み lazy">
+          <td>&lt;img&gt;</td>
+          <td>画像リソースのインライン表示</td>
+          <td class="code">&lt;img src="path.jpg" alt="画像の説明" loading="lazy"&gt;</td>
+          <td>`src`で画像パスを指定、`alt`で代替テキスト（必須）を定義。`loading="lazy"`で遅延読み込み。</td>
+        </tr>
+        <tr data-key="a アンカー リンク ハイパーリンク 遷移 ページ移動 href target blank 別タブ 外部サイト">
+          <td>&lt;a&gt; (別タブ外部リンク対応)</td>
+          <td>ハイパーリンク（別タブ展開）</td>
+          <td class="code">&lt;a href="url" target="_blank" rel="noopener"&gt;リンクテキスト&lt;/a&gt;</td>
+          <td>`href`で遷移先を指定。自分のサイトから離脱させずに別タブで開く安全策の `target="_blank"` と `rel="noopener"` をセット。</td>
+        </tr>
+        <tr data-key="tel 電話 スマホ リンク タップ a href コール タップ発信">
+          <td>&lt;a href="tel:"&gt; <span class="maniac-badge">実戦技</span></td>
+          <td>スマホで「タップしたら電話発信」させる</td>
+          <td class="code">&lt;a href="tel:00000000000"&gt;お電話でお問い合わせ&lt;/a&gt;</td>
+          <td>飲食店の予約サイトや、企業のサポート窓口用CVボタンに絶対に必須になるスマホ専用の指定。</td>
+        </tr>
+        <tr data-key="iframe アイフレーム 埋め込み 外部コンテンツ ウィジェット マップ 地図 youtube">
+          <td>&lt;iframe&gt;</td>
+          <td>インラインフレーム（外部埋め込み）</td>
+          <td class="code">&lt;iframe src="外部URL" width="100%" height="400" frameborder="0"&gt;&lt;/iframe&gt;</td>
+          <td>GoogleマップやYouTube動画、SNSの投稿ウィジェットなどのコンテンツを自サイト内に非同期で綺麗に埋め込む。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【5. リスト・データ構造】</td></tr>
+        <tr data-key="ul li 順序なし リスト 箇条書き コンポーネントの土台 unordered メニュー一覧">
+          <td>&lt;ul&gt; &lt;li&gt; セット</td>
+          <td>順序に意味を持たないリスト構造</td>
+          <td class="code">&lt;ul class="list-group"&gt;
+  &lt;li&gt;リスト項目1&lt;/li&gt;
+  &lt;li&gt;リスト項目2&lt;/li&gt;
+  &lt;li&gt;リスト項目3&lt;/li&gt;
+&lt;/ul&gt;</td>
+          <td>ドロップダウン、サイドメニュー、カード型レイアウトの並列配置など、多くのUI要素の構造土台。</td>
+        </tr>
+        <tr data-key="ol li 順序あり リスト ナンバリング ステップ 手順 ordered ランキング">
+          <td>&lt;ol&gt; &lt;li&gt; セット</td>
+          <td>順序が重要な意味を持つリスト構造</td>
+          <td class="code">&lt;ol class="steps"&gt;
+  &lt;li&gt;ステップ1&lt;/li&gt;
+  &lt;li&gt;ステップ2&lt;/li&gt;
+  &lt;li&gt;ステップ3&lt;/li&gt;
+&lt;/ol&gt;</td>
+          <td>チュートリアル、購入フロー、人気ランキングなど「1, 2, 3...」とステップを順に追うコンテンツに使用。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【6. テーブル（表データ構造）】</td></tr>
+        <tr data-key="table tr th td 表 テーブル 二次元データ マトリクス データ構造 雛形 料金表 スペック">
+          <td>&lt;table&gt; 構築基本セット</td>
+          <td>二次元の表データの定義コンテナ</td>
+          <td class="code">&lt;table class="data-table"&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;プラン項目&lt;/th&gt;
+      &lt;th&gt;内容・価格&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ライトプラン&lt;/td&gt;
+      &lt;td&gt;¥980 / 月&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;プレミアムプラン&lt;/td&gt;
+      &lt;td&gt;¥2,980 / 月&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</td>
+          <td>マトリクス状のデータ（スペック比較表、料金システム、会社概要等）を表示する標準レイアウト。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【7. ユーザー入力・フォームコンポーネント】</td></tr>
+        <tr data-key="form input label button フォーム データ送信 インタラクション アクション method action 入力欄">
+          <td>&lt;form&gt; 構成基本セット</td>
+          <td>ユーザー入力・データ送信エリア</td>
+          <td class="code">&lt;form action="/api/submit" method="POST"&gt;
+  &lt;div class="form-group"&gt;
+    &lt;label for="user-name"&gt;お名前&lt;/label&gt;
+    &lt;input type="text" id="user-name" name="username" placeholder="山田太郎"&gt;
+  &lt;/div&gt;
+  &lt;button type="submit"&gt;送信する&lt;/button&gt;
+&lt;/form&gt;</td>
+          <td>サーバーサイドやJavaScriptのAPIへ、ユーザーが入力したデータを一括送信するための外枠パーツ。</td>
+        </tr>
+        <tr data-key="select option セレクトボックス プルダウン セレクター 選択 項目 ドロップダウン">
+          <td>&lt;select&gt; &lt;option&gt; セット</td>
+          <td>選択肢（ドロップダウンメニュー）</td>
+          <td class="code">&lt;select name="category" id="category-select"&gt;
+  &lt;option value=""&gt;選択してください&lt;/option&gt;
+  &lt;option value="val1"&gt;お問い合わせ&lt;/option&gt;
+  &lt;option value="val2"&gt;お見積もりのご依頼&lt;/option&gt;
+&lt;/select&gt;</td>
+          <td>限られたスペースで、定義されたリスト（カテゴリ、プラン、都道府県など）からユーザーにデータを選ばせるUI。</td>
+        </tr>
+        <tr data-key="textarea テキストエリア 複数行 長文 コメント お問い合わせ本文 メッセージ">
+          <td>&lt;textarea&gt;</td>
+          <td>複数行のテキスト入力エリア</td>
+          <td class="code">&lt;textarea name="message" id="message" rows="5" placeholder="内容を入力してください"&gt;&lt;/textarea&gt;</td>
+          <td>お問い合わせの本文、備考欄、ユーザーレビューなど、改行を含む長文テキストの入力を可能にする。</td>
+        </tr>
+      
+        <tr class="section-tr"><td colspan="4" class="section-td">【8. よく使う実戦HTMLパーツ追加】</td></tr>
+        <tr data-key="picture source responsive image 画像切り替え レスポンシブ webp avif スマホ pc">
+          <td>&lt;picture&gt; &lt;source&gt;</td>
+          <td>画面幅や画像形式に応じて画像を出し分ける</td>
+          <td class="code">&lt;picture&gt;
+  &lt;source srcset="image.webp" type="image/webp"&gt;
+  &lt;source srcset="image-sp.jpg" media="(max-width: 768px)"&gt;
+  &lt;img src="image-pc.jpg" alt="画像の説明"&gt;
+&lt;/picture&gt;</td>
+          <td>スマホでは軽い画像、PCでは大きい画像を表示したい時に使う。表示速度改善にもつながる。</td>
+        </tr>
+        <tr data-key="details summary 開閉 アコーディオン jsなし faq 質問 回答">
+          <td>&lt;details&gt; &lt;summary&gt;</td>
+          <td>JavaScriptなしで開閉できる説明パーツ</td>
+          <td class="code">&lt;details&gt;
+  &lt;summary&gt;詳しく見る&lt;/summary&gt;
+  &lt;p&gt;ここに追加説明を書きます。&lt;/p&gt;
+&lt;/details&gt;</td>
+          <td>FAQ、補足説明、長い注意書きなどをコンパクトに見せたい時に便利。最初の学習にもかなり優しい。</td>
+        </tr>
+        <tr data-key="figure figcaption 画像 説明 キャプション 写真 図版">
+          <td>&lt;figure&gt; &lt;figcaption&gt;</td>
+          <td>画像や図と説明文をセットで扱う</td>
+          <td class="code">&lt;figure&gt;
+  &lt;img src="sample.jpg" alt="サンプル画像"&gt;
+  &lt;figcaption&gt;画像の説明テキスト&lt;/figcaption&gt;
+&lt;/figure&gt;</td>
+          <td>ブログ記事や作品紹介で、画像に説明文を付けたい時に使う。意味構造としても自然。</td>
+        </tr>
+        <tr data-key="data attribute dataset data-id data-name js 受け渡し カスタム属性">
+          <td>data-* 属性</td>
+          <td>HTMLにJS用の情報を持たせる</td>
+          <td class="code">&lt;button data-id="001" data-name="apple"&gt;
+  商品を見る
+&lt;/button&gt;</td>
+          <td>ボタンごとにIDや名前を持たせ、クリック時にJSで読み取る。タブ、商品一覧、ゲームUIでも使いやすい。</td>
+        </tr>
+</tbody>
+    </table>
+  </div>
+
+  <div id="css" class="content hidden">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-tag">プロパティ（呪文）</th>
+          <th class="col-role">一般的な役割・やりたいこと</th>
+          <th class="col-example">よく使う設定値の例（クリックで一括コピー）</th>
+          <th class="col-site">具体的な使われ方（実戦）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-tr"><td colspan="4" class="section-td">【1. 文字・テキストのデザイン】</td></tr>
+        <tr data-key="color 文字色 色 カラー 文字の色 #333 変更">
+          <td>color</td>
+          <td>文字の「色」を変える</td>
+          <td class="code">color: #333333;</td>
+          <td>パーツ毎のカラーを文字に塗ったり、全体の文字色を読みやすく整える。</td>
+        </tr>
+        <tr data-key="font-size 文字サイズ 大きさ サイズ 16px rem 変更">
+          <td>font-size</td>
+          <td>文字の「大きさ」を変える</td>
+          <td class="code">font-size: 16px;</td>
+          <td>見出しをガツンと大きくしたり、スマホ用にテキスト全体のスケールを調整する。</td>
+        </tr>
+        <tr data-key="font-weight 文字の太さ 太さ ボールド bold normal 変更">
+          <td>font-weight</td>
+          <td>文字の「太さ」を変える</td>
+          <td class="code">font-weight: bold;</td>
+          <td>特に強調したい文字や、見出し、ボタンの文字をカチッと太く見せる。</td>
+        </tr>
+        <tr data-key="text-align 文字配置 行揃え 中央揃え センタリング center left right 真ん中">
+          <td>text-align</td>
+          <td>文字の「配置（行揃え）」を変える</td>
+          <td class="code">text-align: center;</td>
+          <td>タイトル（h2）や、ボタンの中のテキストを一発で「中央揃え」に配置する。</td>
+        </tr>
+        <tr data-key="line-height 行間 隙間 読みやすさ 1.6 1.8 文章の高さ">
+          <td>line-height</td>
+          <td>行と行の「行間（隙間）」を整える</td>
+          <td class="code">line-height: 1.8;</td>
+          <td>デフォルトだと文章がギュッと詰まって読みにくくなるのを防ぐ必須のプロパティ（1.6〜1.8が綺麗）。</td>
+        </tr>
+        <tr data-key="text-decoration none リンクの下線 消す 青文字 アンダーライン">
+          <td>text-decoration: none;</td>
+          <td>リンク（aタグ）の「下線」を消す</td>
+          <td class="code">text-decoration: none;</td>
+          <td>メニューバーやオシャレなボタンの中の文字が、いかにも「ハイパーリンク」な下線付きになるのを消し去る。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【2. 背景・色・枠線】</td></tr>
+        <tr data-key="background-color 背景色 箱の色 グレー カラー f5f5f7 塗りつぶし">
+          <td>background-color</td>
+          <td>箱の「背景の色」を変える</td>
+          <td class="code">background-color: #f5f5f7;</td>
+          <td>サイト全体の背景を薄いグレーにしたり、ボタンやカードの背景にパキッと色をつける。</td>
+        </tr>
+        <tr data-key="background-image 背景画像 画像 全面 url 壁紙">
+          <td>background-image</td>
+          <td>箱の「背景に画像」を敷く</td>
+          <td class="code">background-image: url("bg.jpg");
+background-size: cover;
+background-position: center;</td>
+          <td>トップ画面の裏側に、綺麗に撮影された写真を全面（引き伸ばしてフィットさせて）表示する。</td>
+        </tr>
+        <tr data-key="border 枠線 線 罫線 囲み線 1px solid デリミタ">
+          <td>border</td>
+          <td>箱の周りに「枠線」をつける</td>
+          <td class="code">border: 1px solid #dddddd;</td>
+          <td>テーブルの罫線や、白背景ボタンのまわりの繊細な囲み線（1pxの細い線など）を作る。</td>
+        </tr>
+        <tr data-key="border-radius 角丸 丸み 正円 円形 8px 50% アイコン丸化">
+          <td>border-radius</td>
+          <td>箱の角を丸めて「角丸」にする</td>
+          <td class="code">border-radius: 8px;</td>
+          <td>ボタンの角をフワッと丸くして今風のデザインにしたり、`50%`を指定して正方形の写真を綺麗な「正円」にくり抜く。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【3. 余白・サイズ（レイアウトの命）】</td></tr>
+        <tr data-key="padding 内側 余白 内側の余白 隙間 ボタン 内包">
+          <td>padding</td>
+          <td>箱の「内側の余白」を作る</td>
+          <td class="code">padding: 20px;</td>
+          <td>ボタンの文字のまわりに十分な隙間を作って押しやすくしたり、コンテンツの文字が枠線にピタッとくっつくのを防ぐ。</td>
+        </tr>
+        <tr data-key="margin 外側 余白 距離 中央寄せ 0 auto 隣との隙間">
+          <td>margin</td>
+          <td>箱の「外側の余白（隣との距離）」</td>
+          <td class="code">margin-bottom: 24px;</td>
+          <td>パーツや段落同士がくっつかないように下に距離をあけたり、左右を自動計算にして真ん中に寄せる。</td>
+        </tr>
+        <tr data-key="width 横幅 幅 最大幅 100% 1200px 横サイズ">
+          <td>width</td>
+          <td>箱の「横幅」を指定する</td>
+          <td class="code">width: 100%;
+max-width: 1200px;</td>
+          <td>サイト全体の最大幅を制限して大画面モニターでの広がりすぎを防止したり、カードの横サイズを固定する。</td>
+        </tr>
+        <tr data-key="height 縦幅 高さ 固定 auto 500px 縦サイズ">
+          <td>height</td>
+          <td>箱の「縦幅」を指定する</td>
+          <td class="code">height: auto;</td>
+          <td>メインビジュアルの高さ（500px等）をがっちり固定したり、文字量に合わせて自動伸縮（auto）させる。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【4. レイアウト・配置（Flexbox & 最重要プロ技）】</td></tr>
+        <tr data-key="display flex 横並び レイアウト 均等 配置 親の箱 グリッド">
+          <td>display: flex;</td>
+          <td>中に入っている要素を「横並び」にする</td>
+          <td class="code">display: flex;</td>
+          <td>メニューバーの文字や、メンバーのカードを横一列に並べる。すべての横並び・並列配置の絶対的な土台！</td>
+        </tr>
+        <tr data-key="justify-content space-between 左右間隔 均等配置 端と端 両端寄せ メニューバー 隙間">
+          <td>justify-content:<br>space-between;</td>
+          <td>横並びの要素を「両端に等間隔」で広げる</td>
+          <td class="code">justify-content: space-between;</td>
+          <td>左側に「ロゴ」、右側に「メニューリンク」を綺麗に引き離して配置する、Webサイトヘッダーの完全王道パターン。</td>
+        </tr>
+        <tr data-key="justify-content center 中央寄せ 横方向の真ん中 グループ中央 まとめて センター">
+          <td>justify-content:<br>center;</td>
+          <td>横並びの要素を「まとめて中央寄せ」にする</td>
+          <td class="code">justify-content: center;</td>
+          <td>複数並んだボタンのグループや、ページネーション（1 2 3...）を画面全体の横方向の真ん中にギュッと集める。</td>
+        </tr>
+        <tr data-key="align-items center 上下揃え 中央 垂直方向 縦の真ん中 一直線 高調">
+          <td>align-items: center;</td>
+          <td>横並びにした要素の「上下の中心（縦の中央）」を揃える</td>
+          <td class="code">align-items: center;</td>
+          <td>背の高さが違うロゴ画像とテキストメニューなど、並列したパーツの上下中央を一直線に美しく揃えてガタつきを無くす。</td>
+        </tr>
+        <tr data-key="gap ギャップ 間隔 隙間 要素の間 20px flexbox マージン代替">
+          <td>gap</td>
+          <td>並んだ要素同士の「隙間・間隔」をあける</td>
+          <td class="code">gap: 20px;</td>
+          <td>flexで横並びにしたカードやボタン同士がぴったりくっつくのを防ぐ（marginで個別に指定するより遥かに壊れにくい！）。</td>
+        </tr>
+        <tr data-key="margin 0 auto ブロック要素の中央寄せ 箱自体を真ん中 width必須 コンテナ">
+          <td>margin: 0 auto;</td>
+          <td>「箱（要素）そのもの」を画面の真ん中に置く</td>
+          <td class="code">margin: 0 auto;
+width: 90%;
+max-width: 1200px; /* 💡必ず幅を指定する */</td>
+          <td>サイト全体のメインの枠組み（コンテナ）を、大画面ディスプレイの左右中央に綺麗に配置するための必須テクニック。</td>
+        </tr>
+        <tr data-key="table-layout fixed 表の等間隔化 列幅固定 テキスト均等 崩れ防止 テーブル幅">
+          <td>table-layout: fixed;</td>
+          <td>表（テーブル）の「列の幅を完全に均等」にする</td>
+          <td class="code">table-layout: fixed;
+width: 100%;</td>
+          <td>`table`タグに指定。マスの中の文字の長さに関係なく、各列の幅をビシッと1/3や1/4に等間隔化して表示崩れを鉄壁ガード。</td>
+        </tr>
+        <tr data-key="position absolute relative 自由位置 ピン留め 重ねる ラベル バッジ 固定 バッジ">
+          <td>position</td>
+          <td>要素をベースの箱に対して「自由な位置」に重ねる</td>
+          <td class="code">/* 親の箱（基準）に指定 */
+.parent { position: relative; }
+
+/* 重ねたい子要素（ピン留めパーツ）に指定 */
+.child {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+}</td>
+          <td>ブログカードの右上に「New!」というお知らせラベルを浮かせたり、画像の真上に閉じるボタン（×）を重ねて配置する。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【5. アニメーション・ホバー・動き】</td></tr>
+        <tr data-key="transition 変化を「フワッと滑らか」にする animation フワッと 滑らか ホバー hover 0.3s スムーズ">
+          <td>transition</td>
+          <td>色の変化などを「フワッと滑らか」にする</td>
+          <td class="code">transition: all 0.3s ease;</td>
+          <td>ボタンにマウスを乗せた（hover）瞬間に、背景色がパチッと一瞬で変わるのではなく、0.3秒かけてオシャレに変化させる。</td>
+        </tr>
+        <tr data-key="opacity 透明度 透ける マウスホバー 0.7 1 薄くする">
+          <td>opacity</td>
+          <td>要素の「透明度（透け具合）」を変える</td>
+          <td class="code">opacity: 0.7;</td>
+          <td>マウスが乗ったボタンやリンク画像を少し透けさせて、ユーザーに「今これが押せる状態だよ」と直感的に伝える（hoverとセットの定番）。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【6. マニアック・プロの隠し味<span class="maniac-badge">いつ使うの！？</span>】</td></tr>
+        <tr data-key="pointer-events none すり抜け クリック 判定 無効化 画像 邪魔 幽霊 マニアック">
+          <td>pointer-events: none; <span class="maniac-badge">マニアック</span></td>
+          <td>要素を完全に「すり抜け状態（幽霊化）」にする</td>
+          <td class="code">pointer-events: none;</td>
+          <td>【いつ使う？】自作ボタンの上に可愛いアイコン画像を重ねて配置した際、その画像の部分だけクリックが吸い取られてボタンが反応しない時。アイコンにこれをかけると「幽霊化」して裏のボタンにクリックが届く。</td>
+        </tr>
+        <tr data-key="user-select none 選択禁止 コピペ ガード 青くなる 連打 アプリ風 マニアック">
+          <td>user-select: none; <span class="maniac-badge">マニアック</span></td>
+          <td>文字の「範囲選択（青いハイライト）」を禁止する</td>
+          <td class="code">user-select: none;</td>
+          <td>【いつ使う？】JavaScriptで「クリック連打ゲーム」や、何度もカチカチ切り替える「開閉メニュー」を作った際、ユーザーが連打したせいで文字が青く選択されて画面が汚くなるのを防ぐプロのガード技術。</td>
+        </tr>
+        <tr data-key="object-fit cover 画像 歪み 切り抜き 縮尺 サムネイル 比率 アスペクト比 マニアック">
+          <td>object-fit: cover; <span class="maniac-badge">マニアック</span></td>
+          <td>縦横比がバラバラな画像を、歪ませずに指定サイズにハメる</td>
+          <td class="code">width: 100%;
+height: 200px;
+object-fit: cover;</td>
+          <td>【いつ使う？】ブログ一覧や商品リストの画像エリア（例：高さ200px固定）に写真を並べる時。元画像の比率がバラバラでも、横にビヨーンと伸びたり縮んだりさせず、オシャレに自動中央トリミングしてフィットさせる。</td>
+        </tr>
+        <tr data-key="scroll-behavior smooth スムーススクロール ページ内リンク フワッと 戻る 滑らか マニアック">
+          <td>scroll-behavior: smooth; <span class="maniac-badge">マニアック</span></td>
+          <td>ページ内リンク（#）のジャンプを「滑らかスクロール」にする</td>
+          <td class="code">html {
+  scroll-behavior: smooth;
+}</td>
+          <td>【いつ使う？】画面右下の「↑トップへ戻る」リンクを踏んだ瞬間、パチッと一瞬でワープするのではなく、映画のエンドロールのようにスルスルと滑らかに自動スクロールさせたい時にHTML全体にかける親切設計の1行。</td>
+        </tr>
+        <tr data-key="box-sizing border-box パディング 計算 崩れ防止 サイズ 内包 計算不要 マニアック">
+          <td>box-sizing: border-box; <span class="maniac-badge">マニアック</span></td>
+          <td>余白（padding）や線を足しても「箱のサイズを変えない」</td>
+          <td class="code">*, *::before, *::after {
+  box-sizing: border-box;
+}</td>
+          <td>【いつ使う？】横幅50%の箱を2つ綺麗に並べた後、内側に余白（padding: 10px）を足したら、全体のサイズが50%+余白分に肥大化して、横並びがバグって下にドカンと落ちてしまった時の救世主（現代の開発では全員最初にかける）。</td>
+        </tr>
+      
+        <tr class="section-tr"><td colspan="4" class="section-td">【7. レスポンシブ・実務でよく使う追加CSS】</td></tr>
+        <tr data-key="@media メディアクエリ レスポンシブ スマホ pc 画面幅 切り替え">
+          <td>@media</td>
+          <td>画面幅によってCSSを切り替える</td>
+          <td class="code">@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+
+  .card-list {
+    flex-direction: column;
+  }
+}</td>
+          <td>PCでは横並び、スマホでは縦並びにするなど、スマホ対応の中心になる書き方。</td>
+        </tr>
+        <tr data-key="display grid グリッド カード一覧 2列 3列 repeat minmax">
+          <td>display: grid;</td>
+          <td>カードや画像を格子状に並べる</td>
+          <td class="code">.card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}</td>
+          <td>商品一覧、記事一覧、ギャラリーなどに便利。画面幅に応じて自動で列数が変わる。</td>
+        </tr>
+        <tr data-key="clamp font-size 可変 文字サイズ 最小 最大 レスポンシブ">
+          <td>clamp()</td>
+          <td>最小値〜最大値の範囲でサイズを自動調整する</td>
+          <td class="code">font-size: clamp(1.4rem, 4vw, 3rem);</td>
+          <td>見出しをスマホでは小さく、PCでは大きくする時に便利。メディアクエリを減らせる。</td>
+        </tr>
+        <tr data-key="position sticky 固定 追従 ヘッダー 検索欄 スクロール">
+          <td>position: sticky;</td>
+          <td>スクロール中に指定位置でくっつく</td>
+          <td class="code">.search-area {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}</td>
+          <td>検索欄やタブを上に残したまま一覧をスクロールさせたい時に使う。カンペ系UIと相性が良い。</td>
+        </tr>
+        <tr data-key="overflow auto scroll 横スクロール コード 表 はみ出し スマホ">
+          <td>overflow-x: auto;</td>
+          <td>はみ出した内容を横スクロールにする</td>
+          <td class="code">.code-box {
+  overflow-x: auto;
+  white-space: pre;
+}</td>
+          <td>長いコード、表、URLなどがスマホで画面外にはみ出す時の保険。コード表示ではかなり重要。</td>
+        </tr>
+        <tr data-key="aspect-ratio 比率 画像 動画 iframe 正方形 16:9">
+          <td>aspect-ratio</td>
+          <td>要素の縦横比を固定する</td>
+          <td class="code">.movie {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}</td>
+          <td>YouTube埋め込み、カード画像、サムネイルなどを崩さず表示する時に便利。</td>
+        </tr>
+</tbody>
+    </table>
+  </div>
+
+  <div id="js" class="content hidden">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-tag">コード（JSの命令・呪文）</th>
+          <th class="col-role">一般的な役割・意味</th>
+          <th class="col-example">具体的な書き方のテンプレート（クリックで一括コピー）</th>
+          <th class="col-site">具体的な使われ方（実戦）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-tr"><td colspan="4" class="section-td">【1. 画面の要素を捕まえる（主語）】</td></tr>
+        <tr data-key="document.queryselector 1つ取得 要素 ピンポイント 指名 btn クラス セレクター">
+          <td>document.querySelector()</td>
+          <td>画面上の要素を「1つだけ」捕まえる</td>
+          <td class="code">const btn = document.querySelector(".my-button");</td>
+          <td>「送信ボタン」や「特定の開閉メニュー」など、ピンポイントで動かしたい特定の単一ターゲットを指名・格納する。</td>
+        </tr>
+        <tr data-key="document.queryselectorall 全部 まとめて 複数 取得 一括 tab 全員 ループ">
+          <td>document.querySelectorAll()</td>
+          <td>条件に合う要素を「全部まとめて」捕まえる</td>
+          <td class="code">const tabs = document.querySelectorAll(".tab-item");</td>
+          <td>画面内に3つある「タブボタン」や、5つ並んだ「FAQの質問項目」を一括で全部捕まえて、後からまとめて処理するための準備。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【2. 出来事を見張る（動詞）】</td></tr>
+        <tr data-key="addeventlistener イベント 見張り番 クリック スクロール click 監視 発火">
+          <td>.addEventListener()</td>
+          <td>要素に「何かが起きたら動く」見張り番を置く</td>
+          <td class="code">target.addEventListener("click", () => {
+  // 💡ここにクリックされたときに起きてほしい処理を書く
+  console.log("ターゲットが押されました！");
+});</td>
+          <td>Webサイトにユーザー操作による「動き」をつける時のすべての基本。「ボタンがクリックされたら」「画面がスクロールされたら」を四六時中監視する。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【3. 箱（クラス）を操作してCSSを動かす（一番安全）】</td></tr>
+        <tr data-key="classlist.add クラス追加 服を着せる 目立つ色 active スタイル反映">
+          <td>.classList.add()</td>
+          <td>要素に新しい「クラス（CSSの服）」を着せる</td>
+          <td class="code">element.classList.add("is-active");</td>
+          <td>クリックされたタブボタンに、あらかじめCSSで作っておいた「目立つ赤色（アクティブ用CSS）」のクラスを一瞬で上書き適用する。</td>
+        </tr>
+        <tr data-key="classlist.remove クラス削除 脱がせる 元に戻す 消去">
+          <td>.classList.remove()</td>
+          <td>要素から「クラス（CSSの服）」を脱がせる</td>
+          <td class="code">element.classList.remove("is-active");</td>
+          <td>ユーザーが別のメニューを選んだ時、さっきまでアクティブだった古いボタンから「目立つ色クラス」を剥ぎ取って元のデザインに戻す。</td>
+        </tr>
+        <tr data-key="classlist.toggle トグル 切り替え 服を着せる 剥ぎ取る 開閉 スイッチ ハンバーガー">
+          <td>.classList.toggle()</td>
+          <td>クラスの着脱を「クリックするたびに交互に切り替える」</td>
+          <td class="code">element.classList.toggle("is-open");</td>
+          <td>スマホ用のハンバーガーメニュー等で、ボタンを押すたびにメニューが出たり（クラス追加）消えたり（クラス削除）するスイッチ機能。</td>
+        </tr>
+        <tr data-key="classlist.contains クラス確認 判定 開閉チェック open 持っているか">
+          <td>.classList.contains()</td>
+          <td>要素がそのクラスを今持っているか「確認・条件分岐」する</td>
+          <td class="code">if (element.classList.contains("open")) {
+  // 💡すでに開いている場合の処理
+} else {
+  // 💡閉まっている場合の処理
+}</td>
+          <td>「今、ポップアップ画面が表示されているかどうか」を判定して、表示されていたら閉じ、閉じられていたら開くといった高度な条件コントロール。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【4. 中身を直接書き換える・操作する】</td></tr>
+        <tr data-key="textcontent 文字変更 書き換え テキスト 送信中 カウント変更">
+          <td>.textContent</td>
+          <td>要素の「文字（テキスト）」を直接書き換える</td>
+          <td class="code">element.textContent = "送信中...";</td>
+          <td>「送信ボタン」を押した瞬間に、ボタン内の文字を「送信中...」に変更して、ユーザーが何回も連打するのを防ぐ視覚演出。</td>
+        </tr>
+        <tr data-key="style css操作 直接変更 表示 非表示 ポップアップ block none ダイレクト">
+          <td>.style.〇〇</td>
+          <td>JSから直接「CSS」をピンポイントで1箇所書き換える</td>
+          <td class="code">/* 一瞬で表示する */
+element.style.display = "block";
+
+/* 一瞬で非表示（隠す）にする */
+element.style.display = "none";</td>
+          <td>ポップアップの閉じるボタン（×）を押した瞬間に、画面全体を覆う黒いマスクを即座に「非表示（none）」にする時などによく使う。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【5. データの塊をループ処理する（超定番）】</td></tr>
+        <tr data-key="foreach 繰り返し 全処理 上から順に 一発 ループ elements 配列処理 全員一斉">
+          <td>.forEach()</td>
+          <td>捕まえた複数の要素を「上から順に全員まとめて処理」する</td>
+          <td class="code">// 💡捕まえた全員（配列）に対して、上から1人ずつ処理を実行
+elements.forEach(item => {
+  item.addEventListener("click", () => {
+    console.log("誰かがクリックされたよ");
+  });
+});</td>
+          <td>「画面内にある5つのタブボタン全員」に対して、一発でまとめてクリックの見張り番（イベントリスナー）を配置して回る、実戦JSの最重要構文。</td>
+        </tr>
+
+        <tr class="section-tr"><td colspan="4" class="section-td">【6. フォーム・リロード防止のプロ技<span class="maniac-badge">いつ使うの！？</span>】</td></tr>
+        <tr data-key="preventdefault e.preventdefault フォーム送信 キャンセル ページ遷移 止める リロード防止 画面更新停止 マニアック">
+          <td>e.preventDefault(); <span class="maniac-badge">マニアック</span></td>
+          <td>ブラウザの「勝手なページ移動や自動画面リロード」をストップする</td>
+          <td class="code">const form = document.querySelector("form");
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault(); // 💡ブラウザの勝手な画面リロード（更新）を阻止！
+  
+  // ここに自分のやりたいJSの処理を書く
+  alert("画面を更新せずに、データを送信しました！");
+});</td>
+          <td>【いつ使う？】フォームの「送信」ボタンを押した際、ブラウザの初期仕様のせいで画面全体が強制リロード（再読み込み）されてしまい、せっかくJavaScriptで書いたアニメーションやトースト通知の処理が一瞬で消えて真っ白になってしまうのを引き止める時に使う必須テクニック。</td>
+        </tr>
+      
+        <tr class="section-tr"><td colspan="4" class="section-td">【7. 実戦で増やしたいJavaScript追加パーツ】</td></tr>
+        <tr data-key="dataset data attribute data-id カスタム属性 読み取り js html 連携">
+          <td>dataset</td>
+          <td>HTMLの data-* 属性をJSで読み取る</td>
+          <td class="code">const btn = document.querySelector("button");
+
+btn.addEventListener("click", () => {
+  console.log(btn.dataset.id);
+});</td>
+          <td>複数のボタンやカードにIDを持たせて、クリックされた対象の情報を取得する。タブや一覧UIで便利。</td>
+        </tr>
+        <tr data-key="event delegation イベント委任 親 要素 まとめて 追加要素 クリック">
+          <td>イベント委任</td>
+          <td>親要素1つで子要素のクリックをまとめて処理する</td>
+          <td class="code">const list = document.querySelector(".list");
+
+list.addEventListener("click", (e) => {
+  if (e.target.classList.contains("item")) {
+    console.log("項目が押されました");
+  }
+});</td>
+          <td>後から追加される要素にもクリック処理を効かせたい時に便利。リスト、カード一覧、ゲームの選択肢UIにも使える。</td>
+        </tr>
+        <tr data-key="localstorage 保存 ブラウザ セーブ データ 復元 ゲーム メモ">
+          <td>localStorage</td>
+          <td>ブラウザに小さなデータを保存する</td>
+          <td class="code">// 保存
+localStorage.setItem("memo", "保存したい文字");
+
+// 読み込み
+const memo = localStorage.getItem("memo");</td>
+          <td>メモ、設定、前回入力、ゲームの簡易セーブなどに使える。自作ツールの実用感が一気に上がる。</td>
+        </tr>
+        <tr data-key="createelement appendchild 要素作成 追加 dom 生成 カード リスト">
+          <td>createElement()</td>
+          <td>JSで新しいHTML要素を作る</td>
+          <td class="code">const card = document.createElement("div");
+card.className = "card";
+card.textContent = "新しいカード";
+
+document.body.appendChild(card);</td>
+          <td>リストやカードをデータから自動生成したい時に使う。コード量が増えてきたらかなり重要。</td>
+        </tr>
+        <tr data-key="fetch api json データ取得 外部 読み込み 非同期">
+          <td>fetch()</td>
+          <td>外部ファイルやAPIからデータを取得する</td>
+          <td class="code">fetch("data.json")
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+  });</td>
+          <td>JSONファイルからサンプル一覧を読み込む、APIから情報を取るなど、静的ページから一歩進む時に使う。</td>
+        </tr>
+        <tr data-key="setinterval 繰り返し タイマー 時計 ゲームループ 一定間隔">
+          <td>setInterval()</td>
+          <td>一定時間ごとに処理を繰り返す</td>
+          <td class="code">setInterval(() => {
+  console.log("1秒ごとに実行");
+}, 1000);</td>
+          <td>時計、カウントダウン、簡単なゲームループなどに使える。止めたい場合は clearInterval とセットで使う。</td>
+        </tr>
+</tbody>
+    </table>
+  </div>
+
+  <div id="no-result" class="no-result hidden">該当するキーワードのコードが見つかりません。</div>
+  <div id="copy-toast" class="copy-toast">コピーしました！</div>
+
+</div>
+
+<script>
+// タブ切り替え機能
+function switchTab(tabId, e) {
+  document.querySelectorAll(".content").forEach(el => el.classList.add("hidden"));
+  document.getElementById(tabId).classList.remove("hidden");
+
+  document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
+  const clickedTab = e?.target || document.querySelector(`.tab[onclick*="${tabId}"]`);
+  if (clickedTab) clickedTab.classList.add("active");
+
+  filterRows();
+}
+
+// コピー成功メッセージ
+function showCopyToast(message = "コピーしました！") {
+  const toast = document.getElementById("copy-toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showCopyToast.timer);
+  showCopyToast.timer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 1200);
+}
+
+// コピー機能（改行・インデント維持対応）
+function setupCopyButtons() {
+  document.querySelectorAll(".code").forEach(el => {
+    const originalText = el.innerText;
+
+    el.addEventListener("click", async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(originalText);
+        } else {
+          // file:// で開いた時など Clipboard API が使えない場合の保険
+          const temp = document.createElement("textarea");
+          temp.value = originalText;
+          temp.style.position = "fixed";
+          temp.style.left = "-9999px";
+          document.body.appendChild(temp);
+          temp.focus();
+          temp.select();
+          document.execCommand("copy");
+          temp.remove();
+        }
+
+        const currentHtml = el.innerHTML;
+        el.innerText = "コピー完了！ ✅ クリップボードに保存されました";
+        el.style.color = "#00adb5";
+        el.style.fontWeight = "bold";
+        showCopyToast("コピーしました！");
+
+        setTimeout(() => {
+          el.innerHTML = currentHtml;
+          el.style.color = "#9cdcfe";
+          el.style.fontWeight = "normal";
+        }, 900);
+      } catch (err) {
+        console.error("コピー失敗: ", err);
+        showCopyToast("コピーに失敗しました");
+      }
+    });
+  });
+}
+
+// 検索フィルター
+function filterRows() {
+  const word = document.getElementById("search").value.toLowerCase().trim();
+  const activeContent = document.querySelector(".content:not(.hidden)");
+  if (!activeContent) return;
+
+  const rows = activeContent.querySelectorAll("tbody tr[data-key]");
+  const sections = activeContent.querySelectorAll(".section-tr");
+  let visibleRowsCount = 0;
+
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    const key = row.dataset.key.toLowerCase();
+    if (key.includes(word) || text.includes(word)) {
+      row.style.display = "";
+      visibleRowsCount++;
+    } else {
+      row.style.display = "none";
+    }
+  });
+
+  // 検索中、セクションの見出しは邪魔なので非表示、未入力なら表示
+  sections.forEach(sec => {
+    sec.style.display = word === "" ? "" : "none";
+  });
+
+  const noResultMsg = document.getElementById("no-result");
+  if (visibleRowsCount === 0 && word !== "") {
+    noResultMsg.classList.remove("hidden");
+  } else {
+    noResultMsg.classList.add("hidden");
+  }
+}
+
+document.getElementById("search").addEventListener("input", filterRows);
+setupCopyButtons();
+</script>
+
+</body>
+</html>

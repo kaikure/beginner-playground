@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>初心者向けプレイグラウンド 完全版</title>
+<style>
+/* =========================================================
+   初心者向けプレイグラウンド 完全版
+   - PC：HTML / CSS / JS の3分割 + 下にリアルタイムプレビュー
+   - スマホ：上タブで HTML / CSS / JS / プレビュー を切り替え
+   - 左：お手本パーツ一覧
+   - お手本部屋 / じぶんの部屋 切り替え
+   ========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-main: #1e1e24;
+  --bg-dark: #111116;
+  --bg-panel: #25252f;
+  --bg-editor: #1e1e24;
+  --line: #333642;
+  --accent: #00adb5;
+  --accent-blue: #3b82f6;
+  --text-main: #ffffff;
+  --text-sub: #b8bbc7;
+  --preview-bg: #ffffff;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   上部ヘッダー
+   ========================= */
+.header {
+  height: 48px;
+  flex-shrink: 0;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 12px;
+}
+
+.header-title {
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+}
+
+.header-sub {
+  color: #888;
+  font-size: 0.72rem;
+  margin-left: 10px;
+  font-weight: normal;
+}
+
+.header-btn {
+  position: absolute;
+  top: 8px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: #2d2d35;
+  color: white;
+  cursor: pointer;
+  padding: 0 10px;
+  font-weight: bold;
+}
+
+#toggleSidebarBtn {
+  left: 10px;
+}
+
+#resetAllBtn {
+  right: 10px;
+  background: #913939;
+}
+
+/* =========================
+   スマホ用タブ
+   ========================= */
+.mobile-tabs {
+  display: none;
+  flex-shrink: 0;
+  background: #17171e;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #999;
+  padding: 11px 4px;
+  font-weight: bold;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+
+.mobile-tab.active {
+  color: white;
+  background: #23232c;
+  border-bottom-color: var(--accent-blue);
+}
+
+/* =========================
+   メインレイアウト
+   ========================= */
+.main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* =========================
+   左サイドバー
+   ========================= */
+.sidebar {
+  width: 300px;
+  min-width: 220px;
+  max-width: 480px;
+  flex-shrink: 0;
+  background: #f8f9fa;
+  color: #2d3748;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.sidebar-top {
+  background: #2f3138;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.room-tabs,
+.category-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.room-tab,
+.category-tab {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  background: #1e1e24;
+  color: #aaa;
+  padding: 8px 4px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.room-tab.active,
+.category-tab.active {
+  color: white;
+  background: var(--accent);
+}
+
+.search {
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 9px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.section-title {
+  margin: 14px 0 6px;
+  padding: 7px 9px;
+  background: #e2e8f0;
+  color: #2d3748;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: bold;
+}
+
+.part-card {
+  background: white;
+  border: 1px solid #edf0f5;
+  border-radius: 8px;
+  padding: 9px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  cursor: pointer;
+}
+
+.part-card:hover {
+  outline: 2px solid var(--accent);
+}
+
+.part-name {
+  font-size: 0.86rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.part-desc {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.part-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.part-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 4px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: bold;
+}
+
+.btn-load {
+  background: #1e1e24;
+  color: #9cdcfe;
+}
+
+.btn-add {
+  background: #0d9488;
+  color: white;
+}
+
+/* =========================
+   ドラッグ境界線
+   ========================= */
+.resizer-x {
+  width: 7px;
+  flex-shrink: 0;
+  background: #2d3139;
+  cursor: col-resize;
+}
+
+.resizer-y {
+  height: 7px;
+  flex-shrink: 0;
+  background: #2d3139;
+  cursor: row-resize;
+}
+
+.resizer-editor {
+  width: 6px;
+  flex-shrink: 0;
+  background: #2d3139;
+  cursor: col-resize;
+}
+
+.resizer-x:hover,
+.resizer-y:hover,
+.resizer-editor:hover,
+.resizing {
+  background: var(--accent);
+}
+
+/* =========================
+   作業エリア
+   ========================= */
+.workspace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #111116;
+  overflow: hidden;
+}
+
+.info-bar {
+  flex-shrink: 0;
+  min-height: 36px;
+  background: #15151c;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  color: #b8bbc7;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.mode-label {
+  color: var(--accent);
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.editors {
+  height: 52%;
+  min-height: 150px;
+  display: flex;
+  flex-shrink: 0;
+  background: #111116;
+  overflow: hidden;
+}
+
+.editor-box {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  background: var(--bg-editor);
+  overflow: hidden;
+}
+
+.editor-header {
+  min-height: 38px;
+  flex-shrink: 0;
+  background: #252526;
+  color: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.76rem;
+  font-weight: bold;
+}
+
+.editor-title {
+  white-space: nowrap;
+}
+
+.editor-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tool-btn {
+  border: none;
+  border-radius: 4px;
+  background: #3a3a46;
+  color: #ddd;
+  padding: 3px 7px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tool-btn:hover {
+  background: var(--accent-blue);
+  color: white;
+}
+
+textarea {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  resize: none;
+  border: none;
+  outline: none;
+  background: var(--bg-editor);
+  color: #d4d4d4;
+  padding: 10px;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  tab-size: 2;
+}
+
+.explain-box {
+  flex-shrink: 0;
+  max-height: 86px;
+  overflow-y: auto;
+  background: #101018;
+  color: #b9c3d6;
+  border-top: 1px solid #30303a;
+  padding: 8px 10px;
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.explain-box strong {
+  color: #7dd3fc;
+}
+
+/* =========================
+   プレビュー
+   ========================= */
+.preview-area {
+  flex: 1;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  overflow: hidden;
+}
+
+.preview-header {
+  height: 34px;
+  flex-shrink: 0;
+  background: #edf2f7;
+  color: #374151;
+  border-bottom: 1px solid #d7dee8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 0.78rem;
+  font-weight: bold;
+}
+
+.preview-note {
+  font-weight: normal;
+  color: #64748b;
+}
+
+.preview-frame-wrap {
+  flex: 1;
+  min-height: 0;
+  background: white;
+}
+
+#preview {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: none;
+  background: white;
+}
+
+/* =========================
+   スマホ対応
+   ========================= */
+@media (max-width: 768px) {
+  body {
+    overflow: hidden;
+  }
+
+  .header {
+    height: 46px;
+  }
+
+  .header-title {
+    font-size: 0.92rem;
+  }
+
+  .header-sub {
+    display: none;
+  }
+
+  .header-btn {
+    font-size: 0.7rem;
+    padding: 0 7px;
+  }
+
+  .mobile-tabs {
+    display: flex;
+  }
+
+  .main {
+    position: relative;
+  }
+
+  .sidebar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(86vw, 340px);
+    z-index: 50;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 8px 0 24px rgba(0,0,0,0.35);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .resizer-x,
+  .resizer-y,
+  .resizer-editor {
+    display: none;
+  }
+
+  .workspace {
+    width: 100%;
+  }
+
+  .info-bar {
+    font-size: 0.72rem;
+    min-height: 38px;
+  }
+
+  /* スマホ版：
+     上半分はHTML/CSS/JSをタブで切り替える編集スペース。
+     下半分は常にリアルタイム出力を表示する。 */
+  .editors {
+    height: 54%;
+    flex: 0 0 54%;
+    display: flex;
+    min-height: 0;
+  }
+
+  .editor-box {
+    width: 100% !important;
+    min-width: 0;
+    display: none;
+  }
+
+  .editor-box.mobile-active {
+    display: flex;
+  }
+
+  .editors.mobile-active {
+    display: flex;
+  }
+
+  .preview-area {
+    flex: 1;
+    height: auto;
+    display: flex;
+    min-height: 180px;
+  }
+
+  .preview-area.mobile-active {
+    display: flex;
+  }
+
+  .editor-header {
+    min-height: 40px;
+  }
+
+  textarea {
+    font-size: 0.9rem;
+  }
+
+  .explain-box {
+    max-height: 110px;
+  }
+
+  .preview-header {
+    height: 34px;
+    font-size: 0.72rem;
+  }
+
+  .preview-note {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <button class="header-btn" id="toggleSidebarBtn">📦 パーツ</button>
+    <div>
+      <span class="header-title">初心者向けプレイグラウンド 完全版</span>
+      <span class="header-sub">PCは3分割 / スマホはタブ切替 / 下にリアルタイム出力</span>
+    </div>
+    <button class="header-btn" id="resetAllBtn">初期化</button>
+  </header>
+
+  <div class="mobile-tabs">
+    <button class="mobile-tab active" data-mobile="html">HTML</button>
+    <button class="mobile-tab" data-mobile="css">CSS</button>
+    <button class="mobile-tab" data-mobile="js">JS</button>
+  </div>
+
+  <main class="main" id="main">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="room-tabs">
+          <button class="room-tab active" data-room="sample">👀 お手本</button>
+          <button class="room-tab" data-room="my">📝 じぶん</button>
+        </div>
+        <div class="category-tabs">
+          <button class="category-tab active" data-category="basic">基本</button>
+          <button class="category-tab" data-category="layout">配置</button>
+          <button class="category-tab" data-category="js">動き</button>
+        </div>
+        <input class="search" id="search" placeholder="例：ボタン / カード / タブ / フォーム">
+      </div>
+
+      <div class="sidebar-list" id="partsList"></div>
+    </aside>
+
+    <div class="resizer-x" id="sidebarResizer"></div>
+
+    <section class="workspace">
+      <div class="info-bar">
+        <span class="mode-label" id="modeLabel">👀 お手本部屋</span>
+        <span id="currentGuide">左のパーツを選ぶと、お手本コードが入ります。「じぶんの部屋」では自由に遊べます。</span>
+      </div>
+
+      <section class="editors mobile-active" id="editors">
+        <div class="editor-box mobile-active" id="box-html" style="width:33.33%">
+          <div class="editor-header">
+            <span class="editor-title">📄 HTML（骨組み）</span>
+            <div class="editor-tools">
+              <button class="tool-btn" data-copy="html">コピー</button>
+              <button class="tool-btn" data-reset="html">戻す</button>
+            </div>
+          </div>
+          <textarea id="htmlEditor" spellcheck="false"></textarea>
+          <div class="explain-box" id="htmlExplain">
+            <strong>HTML：</strong>画面に出る「部品」を置く場所です。見出し、文章、ボタン、カードなどの骨組みを書きます。
+          </div>
+        </div>
+
+        <div class="resizer-editor" data-resize="html-css"></div>
+
+        <div class="editor-box" id="box-css" style="width:33.33%">
+          <div class="editor-header">
+            <span class="editor-title">🎨 CSS（見た目）</span>
+            <div class="editor-tools">
+              <button class="tool-btn" data-copy="css">コピー</button>
+              <button class="tool-btn" data-reset="css">戻す</button>
+            </div>
+          </div>
+          <textarea id="cssEditor" spellcheck="false"></textarea>
+          <div class="explain-box" id="cssExplain">
+            <strong>CSS：</strong>色、大きさ、余白、配置、角丸、影などを変える場所です。数字や色を変えると見た目が変わります。
+          </div>
+        </div>
+
+        <div class="resizer-editor" data-resize="css-js"></div>
+
+        <div class="editor-box" id="box-js" style="width:33.33%">
+          <div class="editor-header">
+            <span class="editor-title">⚡ JS（動き）</span>
+            <div class="editor-tools">
+              <button class="tool-btn" data-copy="js">コピー</button>
+              <button class="tool-btn" data-reset="js">戻す</button>
+            </div>
+          </div>
+          <textarea id="jsEditor" spellcheck="false"></textarea>
+          <div class="explain-box" id="jsExplain">
+            <strong>JavaScript：</strong>クリック、表示切替、入力チェックなど「動き」を作る場所です。
+          </div>
+        </div>
+      </section>
+
+      <div class="resizer-y" id="previewResizer"></div>
+
+      <section class="preview-area" id="previewArea">
+        <div class="preview-header">
+          <span>💻 リアルタイム出力</span>
+          <span class="preview-note">コードを書き換えるとすぐ反映されます</span>
+        </div>
+        <div class="preview-frame-wrap">
+          <iframe id="preview" title="リアルタイムプレビュー"></iframe>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   データ
+   load：お手本として丸ごと読み込む
+   add ：今のコードにパーツだけ追加する
+   ========================================================= */
+
+const samples = {
+  nav: {
+    category: "basic",
+    title: "ヘッダーメニュー",
+    desc: "ロゴとメニューを横並びにする、サイト上部の定番パーツ。",
+    html: `<header class="site-header">
+  <div class="logo">MySite</div>
+  <nav class="menu">
+    <a href="#">ホーム</a>
+    <a href="#">サービス</a>
+    <a href="#">お問い合わせ</a>
+  </nav>
+</header>`,
+    css: `.site-header {
+  display: flex;              /* ロゴとメニューを横並びにする */
+  justify-content: space-between; /* 左右に離す */
+  align-items: center;        /* 上下中央にそろえる */
+  background: #00adb5;        /* ここを変えると背景色が変わる */
+  padding: 16px 24px;         /* ここを変えるとヘッダーの厚みが変わる */
+  color: white;
+  border-radius: 8px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.menu {
+  display: flex;
+  gap: 18px;                  /* メニュー同士の間隔 */
+}
+
+.menu a {
+  color: white;
+  text-decoration: none;      /* リンクの下線を消す */
+  font-weight: bold;
+}`,
+    js: `// このメニューはCSSだけで見た目を作っています。
+// JavaScriptなしでも、基本的なサイトパーツは作れます。`,
+    explain: {
+      html: "logo と menu を header の中に入れています。HTMLは「どんな部品があるか」を決めます。",
+      css: "display:flex で横並び。justify-content を変えると左右の配置が変わります。background の色を変えるとヘッダー色が変わります。",
+      js: "今回は動きがないのでJSは説明だけです。まずはHTMLとCSSだけでも十分サイトの部品が作れます。"
+    }
+  },
+
+  card: {
+    category: "basic",
+    title: "自己紹介カード",
+    desc: "画像、名前、文章、ボタンをまとめたカードUI。",
+    html: `<div class="profile-card">
+  <img src="https://picsum.photos/120" alt="プロフィール画像">
+  <h2>山田 太郎</h2>
+  <p>HTMLとCSSを勉強中です。少しずつ作れるものを増やしています。</p>
+  <button onclick="sayHello()">あいさつする</button>
+</div>`,
+    css: `.profile-card {
+  max-width: 280px;           /* カードの最大幅 */
+  margin: 20px auto;          /* 左右中央に置く */
+  padding: 24px;              /* 内側の余白 */
+  text-align: center;         /* 中の文字を中央寄せ */
+  background: white;
+  color: #333;
+  border-radius: 16px;        /* 角を丸くする */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); /* 影 */
+}
+
+.profile-card img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;         /* 画像を丸くする */
+  object-fit: cover;
+}
+
+.profile-card h2 {
+  color: #00adb5;
+}
+
+.profile-card button {
+  background: #00adb5;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+}`,
+    js: `function sayHello() {
+  alert("こんにちは！プロフィールカードのボタンが押されました。");
+}`,
+    explain: {
+      html: "カードの中に img / h2 / p / button を入れています。部品を箱にまとめるとカードになります。",
+      css: "max-width と margin:auto で中央に置きます。border-radius は角丸、box-shadow は影です。",
+      js: "button の onclick から sayHello() を呼び出します。ボタンを押すと alert が出ます。"
+    }
+  },
+
+  button: {
+    category: "basic",
+    title: "ぷっくり立体ボタン",
+    desc: "押したときに沈む、CSSだけのボタン演出。",
+    html: `<div class="button-area">
+  <button class="push-button">押してみる</button>
+</div>`,
+    css: `.button-area {
+  text-align: center;
+  padding: 30px;
+}
+
+.push-button {
+  background: #ff7a59;        /* ボタンの色 */
+  color: white;
+  border: none;
+  padding: 16px 36px;         /* ボタンの大きさ */
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #b9472b; /* 下の影で立体感 */
+  transition: 0.1s;
+}
+
+.push-button:active {
+  transform: translateY(6px); /* 押した時に下へ移動 */
+  box-shadow: none;           /* 影を消すと沈んだ感じになる */
+}`,
+    js: `// このボタンの動きはCSSの :active だけで作っています。
+// 押している間だけ .push-button:active の見た目になります。`,
+    explain: {
+      html: "button を1つ置いています。class をつけることでCSSからデザインできます。",
+      css: "box-shadow が立体感、:active が押した時の状態です。translateY の数字を変えると沈む量が変わります。",
+      js: "今回はJSなし。クリック処理がなくてもCSSだけで反応っぽい動きを作れます。"
+    }
+  },
+
+  flex: {
+    category: "layout",
+    title: "Flexbox 3列カード",
+    desc: "横並びカード。Web制作で超よく使う配置パターン。",
+    html: `<div class="feature-list">
+  <div class="feature-card">💎 特典A</div>
+  <div class="feature-card">🚀 特典B</div>
+  <div class="feature-card">🌟 特典C</div>
+</div>`,
+    css: `.feature-list {
+  display: flex;      /* 子要素を横並びにする */
+  gap: 16px;          /* カード同士のすき間 */
+}
+
+.feature-card {
+  flex: 1;            /* 幅を均等に分け合う */
+  background: #00adb5;
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* 画面が狭いときは縦並びにする */
+@media (max-width: 600px) {
+  .feature-list {
+    flex-direction: column;
+  }
+}`,
+    js: `// FlexboxはCSSのレイアウト機能です。
+// JSを使わなくても、画面幅に合わせた配置変更ができます。`,
+    explain: {
+      html: "親の feature-list の中に、3つの feature-card を入れています。",
+      css: "display:flex で横並び。gap は隙間。flex:1 は幅を均等にします。@media でスマホ時だけ縦並びにしています。",
+      js: "配置だけならJS不要です。レスポンシブ対応はCSSが主役です。"
+    }
+  },
+
+  grid: {
+    category: "layout",
+    title: "Grid 2×2 レイアウト",
+    desc: "カードを格子状に並べる。商品一覧やメニュー一覧に便利。",
+    html: `<div class="grid-menu">
+  <div class="grid-item">🍔 メニュー1</div>
+  <div class="grid-item">🍟 メニュー2</div>
+  <div class="grid-item">☕ メニュー3</div>
+  <div class="grid-item">🍰 メニュー4</div>
+</div>`,
+    css: `.grid-menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2列にする */
+  gap: 14px;
+}
+
+.grid-item {
+  background: #f8fafc;
+  color: #333;
+  padding: 22px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* スマホでは1列 */
+@media (max-width: 500px) {
+  .grid-menu {
+    grid-template-columns: 1fr;
+  }
+}`,
+    js: `// Gridは「縦横のマス目」で並べるCSSです。
+// カード一覧や商品一覧に向いています。`,
+    explain: {
+      html: "grid-menu の中に item を複数入れています。数を増やすと自動で並びます。",
+      css: "grid-template-columns: repeat(2, 1fr) が2列の指定です。1frは残り幅を分ける単位です。",
+      js: "一覧表示はCSS Gridだけでも作れます。"
+    }
+  },
+
+  form: {
+    category: "basic",
+    title: "入力フォーム",
+    desc: "入力チェックつき。フォーム送信の基礎。",
+    html: `<form class="contact-form" onsubmit="checkForm(event)">
+  <h2>お問い合わせ</h2>
+  <label>
+    お名前
+    <input id="nameInput" type="text" placeholder="山田 太郎">
+  </label>
+  <label>
+    内容
+    <textarea id="messageInput" placeholder="お問い合わせ内容"></textarea>
+  </label>
+  <button type="submit">送信する</button>
+  <p id="formResult"></p>
+</form>`,
+    css: `.contact-form {
+  max-width: 360px;
+  margin: 20px auto;
+  padding: 22px;
+  background: white;
+  color: #333;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.contact-form label {
+  display: block;
+  margin-bottom: 14px;
+  font-weight: bold;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.contact-form button {
+  width: 100%;
+  padding: 12px;
+  background: #00adb5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+#formResult {
+  color: #00adb5;
+  font-weight: bold;
+}`,
+    js: `function checkForm(event) {
+  event.preventDefault(); // ページの再読み込みを止める
+
+  const name = document.getElementById("nameInput").value;
+  const message = document.getElementById("messageInput").value;
+  const result = document.getElementById("formResult");
+
+  if (name === "" || message === "") {
+    result.textContent = "未入力の項目があります。";
+  } else {
+    result.textContent = name + "さん、送信できました！";
+  }
+}`,
+    explain: {
+      html: "form の中に input と textarea と button を入れています。id をつけるとJSから探せます。",
+      css: "input や textarea に width:100% を指定するとフォーム幅いっぱいに広がります。",
+      js: "event.preventDefault() で送信時のリロードを止めます。value で入力内容を取り出し、textContent で結果を表示します。"
+    }
+  },
+
+  accordion: {
+    category: "js",
+    title: "開閉アコーディオン",
+    desc: "クリックで説明が開いたり閉じたりするFAQパーツ。",
+    html: `<div class="faq">
+  <button class="faq-question" onclick="toggleAnswer()">
+    Q. JavaScriptは何に使うの？
+  </button>
+  <div class="faq-answer" id="answer">
+    A. ボタンを押した時の反応や、表示の切り替えなど「動き」を作ります。
+  </div>
+</div>`,
+    css: `.faq {
+  max-width: 480px;
+  margin: 24px auto;
+  color: #333;
+}
+
+.faq-question {
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  border: none;
+  background: #00adb5;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+}
+
+.faq-answer {
+  display: none; /* 最初は隠す */
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ee;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.faq-answer.open {
+  display: block; /* openクラスがついた時だけ表示 */
+}`,
+    js: `function toggleAnswer() {
+  const answer = document.getElementById("answer");
+  answer.classList.toggle("open");
+}`,
+    explain: {
+      html: "質問ボタンと回答エリアを用意しています。回答エリアに id をつけてJSから操作します。",
+      css: "display:none で隠し、.open がついた時だけ display:block にしています。",
+      js: "classList.toggle('open') で、押すたびに open クラスをつけたり外したりします。"
+    }
+  },
+
+  tabs: {
+    category: "js",
+    title: "タブ切り替え",
+    desc: "ボタンで表示内容を切り替える。スマホUIにも応用できる。",
+    html: `<div class="tab-demo">
+  <div class="tab-buttons">
+    <button onclick="showPanel('one')">HTML</button>
+    <button onclick="showPanel('two')">CSS</button>
+    <button onclick="showPanel('three')">JS</button>
+  </div>
+
+  <div class="panel active" id="panel-one">HTMLは骨組みを作ります。</div>
+  <div class="panel" id="panel-two">CSSは見た目を整えます。</div>
+  <div class="panel" id="panel-three">JSは動きを作ります。</div>
+</div>`,
+    css: `.tab-demo {
+  max-width: 480px;
+  margin: 20px auto;
+  color: #333;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.tab-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #e2e8f0;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.panel {
+  display: none;
+  padding: 20px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.panel.active {
+  display: block;
+}`,
+    js: `function showPanel(name) {
+  document.querySelectorAll(".panel").forEach(panel => {
+    panel.classList.remove("active");
+  });
+
+  document.getElementById("panel-" + name).classList.add("active");
+}`,
+    explain: {
+      html: "3つのボタンと3つの表示エリアを作っています。表示エリアには id をつけています。",
+      css: ".panel は基本非表示、.panel.active だけ表示します。",
+      js: "まず全部の active を外し、選ばれた panel だけに active をつけます。スマホの画面切替にも使う考え方です。"
+    }
+  },
+
+  counter: {
+    category: "js",
+    title: "カウンター",
+    desc: "ボタンを押すたび数字が増える。変数と表示更新の練習。",
+    html: `<div class="counter-box">
+  <h2>クリック数：<span id="count">0</span></h2>
+  <button onclick="plusCount()">+1する</button>
+  <button onclick="resetCount()">リセット</button>
+</div>`,
+    css: `.counter-box {
+  text-align: center;
+  padding: 30px;
+  background: #f8fafc;
+  color: #333;
+  border-radius: 12px;
+}
+
+.counter-box span {
+  color: #00adb5;
+  font-size: 32px;
+}
+
+.counter-box button {
+  margin: 4px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #00adb5;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}`,
+    js: `let count = 0;
+
+function plusCount() {
+  count = count + 1;
+  document.getElementById("count").textContent = count;
+}
+
+function resetCount() {
+  count = 0;
+  document.getElementById("count").textContent = count;
+}`,
+    explain: {
+      html: "数字を入れる場所に span id='count' を用意しています。",
+      css: "span の色や大きさを変えると、数字だけ目立たせられます。",
+      js: "count という変数に数字を保存します。ボタンを押すたび count を増やし、textContent で画面を書き換えます。"
+    }
+  },
+
+  modal: {
+    category: "js",
+    title: "モーダル表示",
+    desc: "ボタンで画面中央にポップアップを出す。",
+    html: `<div class="modal-demo">
+  <button onclick="openModal()">説明を開く</button>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal-card">
+    <h2>モーダルです</h2>
+    <p>画面の上に重ねて表示するパーツです。</p>
+    <button onclick="closeModal()">閉じる</button>
+  </div>
+</div>`,
+    css: `.modal-demo {
+  text-align: center;
+  padding: 30px;
+}
+
+.modal-demo button,
+.modal-card button {
+  background: #00adb5;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.modal-bg {
+  display: none;           /* 最初は隠す */
+  position: fixed;         /* 画面に固定 */
+  inset: 0;                /* 上下左右いっぱい */
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-bg.open {
+  display: flex;
+}
+
+.modal-card {
+  width: min(90%, 360px);
+  background: white;
+  color: #333;
+  padding: 24px;
+  border-radius: 14px;
+  text-align: center;
+}`,
+    js: `function openModal() {
+  document.getElementById("modal").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("open");
+}`,
+    explain: {
+      html: "通常のボタンと、重ねて表示する modal を用意しています。",
+      css: "position:fixed と inset:0 で画面全体を覆います。open クラスがついた時だけ display:flex にします。",
+      js: "openModal で open を追加、closeModal で open を削除します。クラス操作の王道です。"
+    }
+  },
+
+  toast: {
+    category: "js",
+    title: "トースト通知",
+    desc: "保存完了などを右下にふわっと表示。",
+    html: `<div class="toast-demo">
+  <button onclick="showToast()">保存する</button>
+</div>
+
+<div class="toast" id="toast">保存しました！ ✅</div>`,
+    css: `.toast-demo {
+  text-align: center;
+  padding: 30px;
+}
+
+.toast-demo button {
+  background: #222;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: -80px;         /* 最初は画面外 */
+  background: #00adb5;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: bottom 0.3s;
+}
+
+.toast.show {
+  bottom: 20px;          /* showがついたら見える位置へ */
+}`,
+    js: `function showToast() {
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2000);
+}`,
+    explain: {
+      html: "ボタンと通知本体を別々に置いています。通知本体には id をつけます。",
+      css: "bottom:-80px で画面外に隠し、.show の時だけ bottom:20px にします。",
+      js: "classList.add で表示、setTimeout で2秒後に自動で消しています。"
+    }
+  }
+};
+
+const addParts = [
+  {
+    category: "basic",
+    title: "見出しを追加",
+    desc: "HTMLにh1を追加します。",
+    target: "html",
+    code: `<h1>新しいタイトル</h1>\n`
+  },
+  {
+    category: "basic",
+    title: "文章を追加",
+    desc: "HTMLにpタグを追加します。",
+    target: "html",
+    code: `<p>ここに説明文を書きます。</p>\n`
+  },
+  {
+    category: "basic",
+    title: "ボタンを追加",
+    desc: "HTMLにbuttonを追加します。",
+    target: "html",
+    code: `<button class="my-button">ボタン</button>\n`
+  },
+  {
+    category: "layout",
+    title: "中央寄せCSS",
+    desc: "選んだ要素を中央寄せにする考え方。",
+    target: "css",
+    code: `.center-box {\n  text-align: center;\n  margin: 20px auto;\n}\n`
+  },
+  {
+    category: "layout",
+    title: "角丸カードCSS",
+    desc: "白いカード風の見た目を追加します。",
+    target: "css",
+    code: `.my-card {\n  background: white;\n  color: #333;\n  padding: 20px;\n  border-radius: 12px;\n  box-shadow: 0 4px 14px rgba(0,0,0,0.12);\n}\n`
+  },
+  {
+    category: "js",
+    title: "クリックイベント",
+    desc: "ボタンを押した時の処理の基本。",
+    target: "js",
+    code: `document.querySelector(".my-button").addEventListener("click", () => {\n  alert("クリックされました！");\n});\n`
+  }
+];
+
+const defaultMy = {
+  html: `<div class="my-card">
+  <h1>じぶんの作品スペース</h1>
+  <p>ここは自由に遊ぶ場所です。左の「追加」ボタンでパーツを足してもOK。</p>
+  <button class="my-button">押してみる</button>
+</div>`,
+  css: `.my-card {
+  max-width: 420px;
+  margin: 24px auto;
+  padding: 24px;
+  background: white;
+  color: #333;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.my-button {
+  background: #00adb5;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}`,
+  js: `document.querySelector(".my-button").addEventListener("click", () => {
+  alert("じぶんの部屋でボタンが押されました！");
+});`
+};
+
+/* =========================================================
+   状態管理
+   ========================================================= */
+let currentRoom = "sample";
+let currentCategory = "basic";
+let currentSampleKey = "card";
+let activeMobileTab = "html";
+
+const roomData = {
+  sample: {
+    html: "",
+    css: "",
+    js: "",
+    base: { html: "", css: "", js: "" },
+    explain: { html: "", css: "", js: "" }
+  },
+  my: {
+    html: defaultMy.html,
+    css: defaultMy.css,
+    js: defaultMy.js,
+    base: { ...defaultMy },
+    explain: {
+      html: "ここは自由入力です。HTMLを書き換えると、出力画面に出る部品が変わります。",
+      css: "ここは自由入力です。色、余白、角丸、配置などを変えて遊べます。",
+      js: "ここは自由入力です。クリック処理や表示切替などを試せます。"
+    }
+  }
+};
+
+const els = {
+  sidebar: document.getElementById("sidebar"),
+  partsList: document.getElementById("partsList"),
+  search: document.getElementById("search"),
+  modeLabel: document.getElementById("modeLabel"),
+  currentGuide: document.getElementById("currentGuide"),
+  htmlEditor: document.getElementById("htmlEditor"),
+  cssEditor: document.getElementById("cssEditor"),
+  jsEditor: document.getElementById("jsEditor"),
+  htmlExplain: document.getElementById("htmlExplain"),
+  cssExplain: document.getElementById("cssExplain"),
+  jsExplain: document.getElementById("jsExplain"),
+  preview: document.getElementById("preview"),
+  editors: document.getElementById("editors"),
+  previewArea: document.getElementById("previewArea"),
+  boxHtml: document.getElementById("box-html"),
+  boxCss: document.getElementById("box-css"),
+  boxJs: document.getElementById("box-js")
+};
+
+/* =========================================================
+   初期化
+   ========================================================= */
+function init() {
+  loadSample("card");
+  renderParts();
+  bindEvents();
+  switchMobile("html");
+  updatePreview();
+}
+
+function bindEvents() {
+  els.htmlEditor.addEventListener("input", () => saveEditor("html"));
+  els.cssEditor.addEventListener("input", () => saveEditor("css"));
+  els.jsEditor.addEventListener("input", () => saveEditor("js"));
+
+  document.querySelectorAll(".room-tab").forEach(btn => {
+    btn.addEventListener("click", () => switchRoom(btn.dataset.room));
+  });
+
+  document.querySelectorAll(".category-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentCategory = btn.dataset.category;
+      document.querySelectorAll(".category-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderParts();
+    });
+  });
+
+  document.querySelectorAll(".mobile-tab").forEach(btn => {
+    btn.addEventListener("click", () => switchMobile(btn.dataset.mobile));
+  });
+
+  document.getElementById("toggleSidebarBtn").addEventListener("click", () => {
+    els.sidebar.classList.toggle("open");
+  });
+
+  document.getElementById("resetAllBtn").addEventListener("click", () => {
+    if (confirm("今のコードを初期状態に戻しますか？")) {
+      resetAll();
+    }
+  });
+
+  els.search.addEventListener("input", renderParts);
+
+  document.querySelectorAll("[data-copy]").forEach(btn => {
+    btn.addEventListener("click", () => copyCode(btn.dataset.copy));
+  });
+
+  document.querySelectorAll("[data-reset]").forEach(btn => {
+    btn.addEventListener("click", () => resetOne(btn.dataset.reset));
+  });
+
+  setupResizers();
+}
+
+/* =========================================================
+   パーツ一覧
+   ========================================================= */
+function renderParts() {
+  const word = els.search.value.trim().toLowerCase();
+  els.partsList.innerHTML = "";
+
+  const sampleEntries = Object.entries(samples).filter(([key, item]) => {
+    const haystack = `${item.title} ${item.desc} ${item.category}`.toLowerCase();
+    return item.category === currentCategory && haystack.includes(word);
+  });
+
+  const addEntries = addParts.filter(item => {
+    const haystack = `${item.title} ${item.desc} ${item.category}`.toLowerCase();
+    return item.category === currentCategory && haystack.includes(word);
+  });
+
+  if (sampleEntries.length > 0) {
+    const title = document.createElement("div");
+    title.className = "section-title";
+    title.textContent = "📘 お手本として読み込む";
+    els.partsList.appendChild(title);
+
+    sampleEntries.forEach(([key, item]) => {
+      const card = createPartCard(item.title, item.desc, [
+        { text: "丸ごと読込", className: "btn-load", onClick: () => loadSample(key) },
+        { text: "じぶんへ追加", className: "btn-add", onClick: () => addSampleToMy(key) }
+      ]);
+      els.partsList.appendChild(card);
+    });
+  }
+
+  if (addEntries.length > 0) {
+    const title = document.createElement("div");
+    title.className = "section-title";
+    title.textContent = "🧩 今のコードに追加する";
+    els.partsList.appendChild(title);
+
+    addEntries.forEach(item => {
+      const card = createPartCard(item.title, item.desc, [
+        { text: `${labelOf(item.target)}に追加`, className: "btn-add", onClick: () => insertCode(item.target, item.code) }
+      ]);
+      els.partsList.appendChild(card);
+    });
+  }
+
+  if (sampleEntries.length === 0 && addEntries.length === 0) {
+    const none = document.createElement("div");
+    none.className = "part-card";
+    none.innerHTML = `<div class="part-name">見つかりません</div><div class="part-desc">検索ワードを変えてみてください。</div>`;
+    els.partsList.appendChild(none);
+  }
+}
+
+function createPartCard(name, desc, actions) {
+  const card = document.createElement("div");
+  card.className = "part-card";
+
+  const title = document.createElement("div");
+  title.className = "part-name";
+  title.textContent = name;
+
+  const description = document.createElement("div");
+  description.className = "part-desc";
+  description.textContent = desc;
+
+  const actionBox = document.createElement("div");
+  actionBox.className = "part-actions";
+
+  actions.forEach(action => {
+    const btn = document.createElement("button");
+    btn.textContent = action.text;
+    btn.className = action.className;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      action.onClick();
+      if (window.innerWidth <= 768) {
+        els.sidebar.classList.remove("open");
+      }
+    });
+    actionBox.appendChild(btn);
+  });
+
+  card.appendChild(title);
+  card.appendChild(description);
+  card.appendChild(actionBox);
+  return card;
+}
+
+function labelOf(type) {
+  if (type === "html") return "HTML";
+  if (type === "css") return "CSS";
+  return "JS";
+}
+
+/* =========================================================
+   部屋・サンプル操作
+   ========================================================= */
+function switchRoom(room) {
+  saveAllEditors();
+  currentRoom = room;
+
+  document.querySelectorAll(".room-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.room === room);
+  });
+
+  if (room === "sample") {
+    els.modeLabel.textContent = "👀 お手本部屋";
+    els.currentGuide.textContent = "左のパーツを選ぶと、お手本コードが入ります。まずは数字や色を変えて、出力が変わる感覚をつかみましょう。";
+  } else {
+    els.modeLabel.textContent = "📝 じぶんの部屋";
+    els.currentGuide.textContent = "自由に書いて遊ぶ場所です。左の「追加」ボタンで少しずつパーツを足せます。";
+  }
+
+  applyRoomToEditors();
+}
+
+function loadSample(key) {
+  const item = samples[key];
+  if (!item) return;
+
+  currentSampleKey = key;
+  currentRoom = "sample";
+
+  roomData.sample.html = item.html;
+  roomData.sample.css = item.css;
+  roomData.sample.js = item.js;
+  roomData.sample.base = { html: item.html, css: item.css, js: item.js };
+  roomData.sample.explain = item.explain;
+
+  document.querySelectorAll(".room-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.room === "sample");
+  });
+
+  els.modeLabel.textContent = "👀 お手本部屋";
+  els.currentGuide.textContent = `「${item.title}」を読み込みました。説明を見ながら、色・数字・文字を変えてみましょう。`;
+
+  applyRoomToEditors();
+
+  if (window.innerWidth <= 768) {
+    switchMobile("html");
+  }
+}
+
+function addSampleToMy(key) {
+  const item = samples[key];
+  if (!item) return;
+
+  switchRoom("my");
+
+  roomData.my.html += `\n\n<!-- 追加：${item.title} -->\n` + item.html;
+  roomData.my.css += `\n\n/* 追加：${item.title} */\n` + item.css;
+  roomData.my.js += `\n\n// 追加：${item.title}\n` + item.js;
+
+  applyRoomToEditors();
+  els.currentGuide.textContent = `じぶんの部屋に「${item.title}」を追加しました。出力画面で変化を確認できます。`;
+}
+
+function applyRoomToEditors() {
+  const data = roomData[currentRoom];
+  els.htmlEditor.value = data.html;
+  els.cssEditor.value = data.css;
+  els.jsEditor.value = data.js;
+
+  els.htmlExplain.innerHTML = `<strong>HTML：</strong>${escapeHtml(data.explain.html || "骨組みを書きます。")}`;
+  els.cssExplain.innerHTML = `<strong>CSS：</strong>${escapeHtml(data.explain.css || "見た目を変えます。")}`;
+  els.jsExplain.innerHTML = `<strong>JavaScript：</strong>${escapeHtml(data.explain.js || "動きを作ります。")}`;
+
+  updatePreview();
+}
+
+function saveEditor(type) {
+  roomData[currentRoom][type] = getEditor(type).value;
+  updatePreview();
+}
+
+function saveAllEditors() {
+  roomData[currentRoom].html = els.htmlEditor.value;
+  roomData[currentRoom].css = els.cssEditor.value;
+  roomData[currentRoom].js = els.jsEditor.value;
+}
+
+function resetOne(type) {
+  const data = roomData[currentRoom];
+  data[type] = data.base[type] || "";
+  getEditor(type).value = data[type];
+  updatePreview();
+}
+
+function resetAll() {
+  if (currentRoom === "sample") {
+    loadSample(currentSampleKey);
+  } else {
+    roomData.my = {
+      html: defaultMy.html,
+      css: defaultMy.css,
+      js: defaultMy.js,
+      base: { ...defaultMy },
+      explain: {
+        html: "ここは自由入力です。HTMLを書き換えると、出力画面に出る部品が変わります。",
+        css: "ここは自由入力です。色、余白、角丸、配置などを変えて遊べます。",
+        js: "ここは自由入力です。クリック処理や表示切替などを試せます。"
+      }
+    };
+    applyRoomToEditors();
+  }
+}
+
+function insertCode(type, code) {
+  if (currentRoom !== "my") {
+    switchRoom("my");
+  }
+
+  const editor = getEditor(type);
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const before = editor.value.slice(0, start);
+  const after = editor.value.slice(end);
+
+  editor.value = before + code + after;
+  editor.selectionStart = editor.selectionEnd = start + code.length;
+  editor.focus();
+
+  roomData.my[type] = editor.value;
+  updatePreview();
+
+  if (window.innerWidth <= 768) {
+    switchMobile(type);
+  }
+}
+
+function getEditor(type) {
+  if (type === "html") return els.htmlEditor;
+  if (type === "css") return els.cssEditor;
+  return els.jsEditor;
+}
+
+/* =========================================================
+   プレビュー
+   ========================================================= */
+function updatePreview() {
+  const html = els.htmlEditor.value;
+  const css = els.cssEditor.value;
+  const js = els.jsEditor.value;
+
+  const source = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+  font-family: sans-serif;
+  margin: 16px;
+  background: #ffffff;
+}
+${css}
+</style>
+</head>
+<body>
+${html}
+<script>
+try {
+${js}
+} catch (error) {
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    '<pre style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:8px;white-space:pre-wrap;">JSエラー: ' + error.message + '</pre>'
+  );
+}
+<\/script>
+</body>
+</html>`;
+
+  const doc = els.preview.contentDocument || els.preview.contentWindow.document;
+  doc.open();
+  doc.write(source);
+  doc.close();
+}
+
+/* =========================================================
+   スマホタブ
+   ========================================================= */
+function switchMobile(tab) {
+  activeMobileTab = tab;
+
+  document.querySelectorAll(".mobile-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.mobile === tab);
+  });
+
+  /* スマホではプレビューは常に下に表示。
+     ここでは上側のエディタだけを HTML / CSS / JS で切り替える。 */
+  els.editors.classList.add("mobile-active");
+  els.previewArea.classList.add("mobile-active");
+
+  [els.boxHtml, els.boxCss, els.boxJs].forEach(box => box.classList.remove("mobile-active"));
+
+  if (tab === "html") els.boxHtml.classList.add("mobile-active");
+  if (tab === "css") els.boxCss.classList.add("mobile-active");
+  if (tab === "js") els.boxJs.classList.add("mobile-active");
+
+  updatePreview();
+}
+
+/* =========================================================
+   コピー
+   ========================================================= */
+function copyCode(type) {
+  const editor = getEditor(type);
+  editor.select();
+  document.execCommand("copy");
+}
+
+/* =========================================================
+   リサイズ
+   ========================================================= */
+function setupResizers() {
+  const sidebarResizer = document.getElementById("sidebarResizer");
+  const previewResizer = document.getElementById("previewResizer");
+  const editors = els.editors;
+
+  let resizing = null;
+
+  sidebarResizer.addEventListener("mousedown", (e) => {
+    resizing = "sidebar";
+    sidebarResizer.classList.add("resizing");
+    e.preventDefault();
+  });
+
+  previewResizer.addEventListener("mousedown", (e) => {
+    resizing = "preview";
+    previewResizer.classList.add("resizing");
+    e.preventDefault();
+  });
+
+  document.querySelectorAll(".resizer-editor").forEach(resizer => {
+    resizer.addEventListener("mousedown", (e) => {
+      resizing = resizer.dataset.resize;
+      resizer.classList.add("resizing");
+      e.preventDefault();
+    });
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!resizing || window.innerWidth <= 768) return;
+
+    if (resizing === "sidebar") {
+      const width = Math.min(Math.max(e.clientX, 220), 480);
+      els.sidebar.style.width = width + "px";
+    }
+
+    if (resizing === "preview") {
+      const rect = document.querySelector(".workspace").getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const percent = Math.min(Math.max((y / rect.height) * 100, 25), 78);
+      editors.style.height = percent + "%";
+    }
+
+    if (resizing === "html-css" || resizing === "css-js") {
+      resizeEditors(e, resizing);
+    }
+  });
+
+  document.addEventListener("mouseup", () => {
+    resizing = null;
+    document.querySelectorAll(".resizing").forEach(el => el.classList.remove("resizing"));
+  });
+}
+
+function resizeEditors(e, type) {
+  const rect = els.editors.getBoundingClientRect();
+  const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+
+  const htmlW = parseFloat(els.boxHtml.style.width);
+  const cssW = parseFloat(els.boxCss.style.width);
+  const jsW = parseFloat(els.boxJs.style.width);
+
+  if (type === "html-css") {
+    const newHtml = Math.min(Math.max(xPct, 15), 70);
+    const remaining = 100 - newHtml;
+    const cssRatio = cssW / (cssW + jsW);
+    els.boxHtml.style.width = newHtml + "%";
+    els.boxCss.style.width = remaining * cssRatio + "%";
+    els.boxJs.style.width = remaining * (1 - cssRatio) + "%";
+  }
+
+  if (type === "css-js") {
+    const htmlCurrent = parseFloat(els.boxHtml.style.width);
+    const newCssEnd = Math.min(Math.max(xPct, htmlCurrent + 15), 85);
+    els.boxCss.style.width = (newCssEnd - htmlCurrent) + "%";
+    els.boxJs.style.width = (100 - newCssEnd) + "%";
+  }
+}
+
+/* =========================================================
+   小物
+   ========================================================= */
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+init();
+</script>
+</body>
+</html>
