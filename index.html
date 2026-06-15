@@ -531,12 +531,32 @@ textarea {
   .sidebar.open {
     transform: translateX(0);
   }
+.resizer-x,
+.resizer-editor {
+  display: none;
+}
 
-  .resizer-x,
-  .resizer-y,
-  .resizer-editor {
-    display: none;
-  }
+.resizer-y {
+  display: block;
+  height: 14px;
+  flex-shrink: 0;
+  background: #2d3139;
+  cursor: row-resize;
+  touch-action: none;
+  position: relative;
+}
+
+.resizer-y::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: #00adb5;
+  transform: translate(-50%, -50%);
+}
 
   .workspace {
     width: 100%;
@@ -551,11 +571,11 @@ textarea {
      上半分はHTML/CSS/JSをタブで切り替える編集スペース。
      下半分は常にリアルタイム出力を表示する。 */
   .editors {
-    height: 54%;
-    flex: 0 0 54%;
-    display: flex;
-    min-height: 0;
-  }
+  height: 54%;
+  flex: 0 0 54%;
+  display: flex;
+  min-height: 140px;
+}
 
   .editor-box {
     width: 100% !important;
@@ -571,12 +591,12 @@ textarea {
     display: flex;
   }
 
-  .preview-area {
-    flex: 1;
-    height: auto;
-    display: flex;
-    min-height: 180px;
-  }
+ .preview-area {
+  flex: 1;
+  height: auto;
+  display: flex;
+  min-height: 140px;
+}
 
   .preview-area.mobile-active {
     display: flex;
@@ -617,7 +637,7 @@ textarea {
     </span>
   </div>
 
-<a href="code-cheatsheet.html"
+ <a href="code-cheatsheet.html"
    target="_blank"
    rel="noopener noreferrer"
    class="header-link">
@@ -1805,28 +1825,34 @@ function setupResizers() {
 
   let resizing = null;
 
-  sidebarResizer.addEventListener("mousedown", (e) => {
-    resizing = "sidebar";
-    sidebarResizer.classList.add("resizing");
-    e.preventDefault();
+  function startResize(type, resizer, event) {
+    resizing = type;
+    resizer.classList.add("resizing");
+    event.preventDefault();
+
+    if (event.pointerId !== undefined) {
+      resizer.setPointerCapture(event.pointerId);
+    }
+  }
+
+  sidebarResizer.addEventListener("pointerdown", (e) => {
+    if (window.innerWidth <= 768) return;
+    startResize("sidebar", sidebarResizer, e);
   });
 
-  previewResizer.addEventListener("mousedown", (e) => {
-    resizing = "preview";
-    previewResizer.classList.add("resizing");
-    e.preventDefault();
+  previewResizer.addEventListener("pointerdown", (e) => {
+    startResize("preview", previewResizer, e);
   });
 
   document.querySelectorAll(".resizer-editor").forEach(resizer => {
-    resizer.addEventListener("mousedown", (e) => {
-      resizing = resizer.dataset.resize;
-      resizer.classList.add("resizing");
-      e.preventDefault();
+    resizer.addEventListener("pointerdown", (e) => {
+      if (window.innerWidth <= 768) return;
+      startResize(resizer.dataset.resize, resizer, e);
     });
   });
 
-  document.addEventListener("mousemove", (e) => {
-    if (!resizing || window.innerWidth <= 768) return;
+  document.addEventListener("pointermove", (e) => {
+    if (!resizing) return;
 
     if (resizing === "sidebar") {
       const width = Math.min(Math.max(e.clientX, 220), 480);
@@ -1836,8 +1862,17 @@ function setupResizers() {
     if (resizing === "preview") {
       const rect = document.querySelector(".workspace").getBoundingClientRect();
       const y = e.clientY - rect.top;
-      const percent = Math.min(Math.max((y / rect.height) * 100, 25), 78);
+
+      const minPercent = window.innerWidth <= 768 ? 28 : 25;
+      const maxPercent = window.innerWidth <= 768 ? 72 : 78;
+
+      const percent = Math.min(
+        Math.max((y / rect.height) * 100, minPercent),
+        maxPercent
+      );
+
       editors.style.height = percent + "%";
+      editors.style.flexBasis = percent + "%";
     }
 
     if (resizing === "html-css" || resizing === "css-js") {
@@ -1845,9 +1880,18 @@ function setupResizers() {
     }
   });
 
-  document.addEventListener("mouseup", () => {
+  document.addEventListener("pointerup", () => {
     resizing = null;
-    document.querySelectorAll(".resizing").forEach(el => el.classList.remove("resizing"));
+    document.querySelectorAll(".resizing").forEach(el => {
+      el.classList.remove("resizing");
+    });
+  });
+
+  document.addEventListener("pointercancel", () => {
+    resizing = null;
+    document.querySelectorAll(".resizing").forEach(el => {
+      el.classList.remove("resizing");
+    });
   });
 }
 
