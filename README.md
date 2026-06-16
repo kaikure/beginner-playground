@@ -2,6 +2,10 @@
 
 初心者向けHTML/CSS/JavaScriptプレイグラウンド。
 
+## リンク
+
+https://kaikure.github.io/beginner-playground/
+
 ## 特徴
 
 - リアルタイムプレビュー
